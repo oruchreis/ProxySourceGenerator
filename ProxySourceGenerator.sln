@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{ADC20653-CCE7-4CE6-9A6E-E9E20C92D8CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxySourceGenerator", "src\ProxySourceGenerator\ProxySourceGenerator.csproj", "{E6BCCCEE-ADE7-4E32-8BE4-79213F982253}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxySourceGenerator.Test", "test\ProxySourceGenerator.Test\ProxySourceGenerator.Test.csproj", "{71A0580E-2C7B-4B0A-B7FC-740633F40FD9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxySourceGenerator.Samples", "test\ProxySourceGenerator.Samples\ProxySourceGenerator.Samples.csproj", "{6DB43768-A398-4D5B-B3AC-DEC492C60D12}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxySourceGenerator.SamplesLib", "test\ProxySourceGenerator.SamplesLib\ProxySourceGenerator.SamplesLib.csproj", "{3EA8E971-8308-41BE-B34D-5BFEC30C38F2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxySourceGenerator.Core", "src\ProxySourceGenerator.Core\ProxySourceGenerator.Core.csproj", "{FC7864E4-8CDA-4EE7-93BF-FF2B03828744}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4EEA82E2-F7AA-443B-8ED0-FF3B5863E8C3}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+		CHANGELOG.md = CHANGELOG.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E6BCCCEE-ADE7-4E32-8BE4-79213F982253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6BCCCEE-ADE7-4E32-8BE4-79213F982253}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6BCCCEE-ADE7-4E32-8BE4-79213F982253}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6BCCCEE-ADE7-4E32-8BE4-79213F982253}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71A0580E-2C7B-4B0A-B7FC-740633F40FD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71A0580E-2C7B-4B0A-B7FC-740633F40FD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71A0580E-2C7B-4B0A-B7FC-740633F40FD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71A0580E-2C7B-4B0A-B7FC-740633F40FD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DB43768-A398-4D5B-B3AC-DEC492C60D12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DB43768-A398-4D5B-B3AC-DEC492C60D12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DB43768-A398-4D5B-B3AC-DEC492C60D12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DB43768-A398-4D5B-B3AC-DEC492C60D12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EA8E971-8308-41BE-B34D-5BFEC30C38F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA8E971-8308-41BE-B34D-5BFEC30C38F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA8E971-8308-41BE-B34D-5BFEC30C38F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA8E971-8308-41BE-B34D-5BFEC30C38F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC7864E4-8CDA-4EE7-93BF-FF2B03828744}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC7864E4-8CDA-4EE7-93BF-FF2B03828744}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC7864E4-8CDA-4EE7-93BF-FF2B03828744}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC7864E4-8CDA-4EE7-93BF-FF2B03828744}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{71A0580E-2C7B-4B0A-B7FC-740633F40FD9} = {ADC20653-CCE7-4CE6-9A6E-E9E20C92D8CC}
+		{6DB43768-A398-4D5B-B3AC-DEC492C60D12} = {ADC20653-CCE7-4CE6-9A6E-E9E20C92D8CC}
+		{3EA8E971-8308-41BE-B34D-5BFEC30C38F2} = {ADC20653-CCE7-4CE6-9A6E-E9E20C92D8CC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E49F5A72-EB9D-492A-A2F2-65838CD5F1E0}
+	EndGlobalSection
+EndGlobal
