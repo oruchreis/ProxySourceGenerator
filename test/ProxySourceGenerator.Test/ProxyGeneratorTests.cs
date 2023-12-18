@@ -168,4 +168,48 @@ public class ProxyGeneratorTests : VerifyBase
             }
             """);
     }
+
+    [TestMethod]
+    public void DontUseInterface()
+    {
+        VerifyProxy("""
+            using ProxySourceGenerator;
+
+            namespace Test;
+            [GenerateProxy(GenerateForDerived=true, UseInterface=false)]
+            public abstract class TestClassBase
+            {
+                protected virtual string ABaseMethod(int param1, 
+                    long param2, 
+                    List<int> param3)
+                {
+                    return nameof(ABaseMethod);
+                }
+            }
+            
+            public class TestClass: TestClassBase
+            {
+                public virtual string AProperty {get;set;}
+                public virtual void Method()
+                {
+                }
+            
+                internal virtual int MethodReturnInt(string str)
+                {
+                    return 1;
+                }
+
+                protected override string ABaseMethod(
+                    int param1, 
+                    long param2, 
+                    List<int> param3
+                )
+                {
+                    return "";
+                }
+
+                public void NotProxiedMethod(){}
+            }
+            """);
+    }
 }

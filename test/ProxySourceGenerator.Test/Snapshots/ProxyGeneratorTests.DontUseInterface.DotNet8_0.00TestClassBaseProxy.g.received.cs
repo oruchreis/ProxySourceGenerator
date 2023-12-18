@@ -1,24 +1,17 @@
 ﻿//HintName: TestClassBaseProxy.g.cs
 using ProxySourceGenerator;
-using System.Collections.Generic;
-using System;
 namespace Test
 {
-    partial interface ITestClassBase 
-    {
-        string ABaseMethod(int param1, long param2, List<int> param3);
-    }
-
     internal static class TestClassBaseProxyInitializer
     {
         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
         public static void RegisterProxy()
         {
-            ProxySourceGenerator.ProxyAccessor<ITestClassBase>.Register(underlyingObject => new TestClassBaseProxy(underlyingObject));
+            ProxySourceGenerator.ProxyAccessor<TestClassBase>.Register(underlyingObject => new TestClassBaseProxy(underlyingObject));
         }
     }
     
-    partial class TestClassBaseProxy: ITestClassBase, IGeneratedProxy<ITestClassBase> 
+    partial class TestClassBaseProxy: TestClassBase, IGeneratedProxy<TestClassBase> 
     {
         /// <inheritdoc/>
         public ProxySourceGenerator.InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
@@ -27,21 +20,21 @@ namespace Test
         /// <inheritdoc/>
         public ProxySourceGenerator.InterceptMethodHandler InterceptMethod { get; set; }
         /// <inheritdoc/>
-        public ITestClassBase UnderlyingObject { get; set; }
+        public TestClassBase UnderlyingObject { get; set; }
         /// <inheritdoc/>
-        ITestClassBase IGeneratedProxy<ITestClassBase>.Access => (ITestClassBase) this;
-        public TestClassBaseProxy (ITestClassBase underlyingObject)
+        TestClassBase IGeneratedProxy<TestClassBase>.Access => (TestClassBase) this;
+        public TestClassBaseProxy (TestClassBase underlyingObject)
             :base()
         {
             UnderlyingObject = underlyingObject;
         }
-        #region protected string ABaseMethod(int param1, long param2, List<int> param3) Method
+        #region protected override string ABaseMethod(int param1, long param2, List<int> param3) Method
         protected virtual string OnABaseMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
             
         {
             return baseMethod(param1, param2, param3);
         }
-        protected string ABaseMethod(int param1, long param2, List<int> param3)
+        protected override string ABaseMethod(int param1, long param2, List<int> param3)
         {
             if (InterceptMethod != null)
                 return (string)InterceptMethod(
@@ -56,6 +49,6 @@ namespace Test
             else
                 return OnABaseMethod(UnderlyingObject.ABaseMethod, param1, param2, param3);
         }
-        #endregion //protected string ABaseMethod(int param1, long param2, List<int> param3) Method
+        #endregion //protected override string ABaseMethod(int param1, long param2, List<int> param3) Method
     }
 }

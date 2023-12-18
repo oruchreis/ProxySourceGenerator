@@ -33,13 +33,13 @@ namespace Test
         {
             UnderlyingObject = underlyingObject;
         }
-        #region protected virtual string ABaseMethod(int param1, long param2, List<int> param3) Method
+        #region protected string ABaseMethod(int param1, long param2, List<int> param3) Method
         protected virtual string OnABaseMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
             
         {
             return baseMethod(param1, param2, param3);
         }
-        protected virtual string ABaseMethod(int param1, long param2, List<int> param3)
+        protected string ABaseMethod(int param1, long param2, List<int> param3)
         {
             if (InterceptMethod != null)
                 return (string)InterceptMethod(
@@ -54,6 +54,6 @@ namespace Test
             else
                 return OnABaseMethod(UnderlyingObject.ABaseMethod, param1, param2, param3);
         }
-        #endregion //protected virtual string ABaseMethod(int param1, long param2, List<int> param3) Method
+        #endregion //protected string ABaseMethod(int param1, long param2, List<int> param3) Method
     }
 }

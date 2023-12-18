@@ -12,9 +12,9 @@
     <Title>ProxySourceGenerator</Title>
     <Description>Generates proxy class from classes or interfaces to intercept calls anbd properties.</Description>
     <PackageTags>proxy source generator intercept interceptor</PackageTags>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <FileVersion>1.0.0</FileVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>1.0.1</FileVersion>
     <Authors>oruchreis</Authors>
     <Copyright>oruchreis</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>

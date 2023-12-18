@@ -1,5 +1,7 @@
 ﻿//HintName: TestClassProxy.g.cs
 using ProxySourceGenerator;
+using System.Collections.Generic;
+using System;
 namespace Test
 {
     partial interface ITestClass 

@@ -42,8 +42,20 @@ Generates proxy classes from classes and interfaces.
 >     InterceptMethodCallerHandler method,
 >     Dictionary<string, object> parameters) =>
 > {
->     Console.WriteLine("method: " + methodName + " parameters: " + string.Join(",", parameters.Select(kv => (kv.Key, kv.Value).ToString())));
+>     Console.WriteLine("method called: " + methodName + string.Join(",",parameters.Select(kv => (kv.Key, kv.Value).ToString())));
 >     return method(parameters);
+> };
+> 
+> proxy.InterceptPropertySetter = (propertyName, setter, value) =>
+> {
+>     Console.WriteLine($"property set: {propertyName} with value '{value}'");
+>     setter(value);
+> };
+> 
+> proxy.InterceptPropertyGetter = (propertyName, getter) =>
+> {
+>     Console.WriteLine($"property get: {propertyName}");
+>     return getter();
 > };
 > ```
 - You can access methods/properties with explicit casting or `Access` property:
@@ -113,7 +125,7 @@ public partial interface ITestClass {}
 - Can't generate proxy from `sealed` classes with `UseInterface=false`.
 ```csharp
 [GenerateProxy(UseInterface=false)]
-public sealed class ASealedClass //NonSense, can't derived from this clas because of sealed.
+public sealed class ASealedClass //NonSense, can't be derived from this clas because of sealed.
 {
 }
 ```

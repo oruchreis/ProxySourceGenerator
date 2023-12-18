@@ -310,7 +310,11 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 if (propertyDeclarationSyntax != null && propertySymbol != null)
                 {
                     var modifiers = propertyDeclarationSyntax.Modifiers
-                            .Where(m => !m.IsKind(SyntaxKind.NewKeyword) && !m.IsKind(SyntaxKind.AbstractKeyword) && !m.IsKind(SyntaxKind.OverrideKeyword));
+                            .Where(m => 
+                                !m.IsKind(SyntaxKind.NewKeyword) && 
+                                !m.IsKind(SyntaxKind.AbstractKeyword) && 
+                                !m.IsKind(SyntaxKind.OverrideKeyword) &&
+                                !m.IsKind(SyntaxKind.VirtualKeyword));
                     if (!useInterface)
                         modifiers = modifiers
                             .Union([SyntaxFactory.Token(SyntaxKind.OverrideKeyword).WithTrailingTrivia(SyntaxFactory.Space)]);
@@ -393,7 +397,11 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 else if (methodDeclarationSyntax != null && methodSymbol != null)
                 {
                     var modifiers = methodDeclarationSyntax.Modifiers
-                            .Where(m => !m.IsKind(SyntaxKind.NewKeyword) && !m.IsKind(SyntaxKind.AbstractKeyword) && !m.IsKind(SyntaxKind.OverrideKeyword));
+                            .Where(m => 
+                                !m.IsKind(SyntaxKind.NewKeyword) && 
+                                !m.IsKind(SyntaxKind.AbstractKeyword) && 
+                                !m.IsKind(SyntaxKind.OverrideKeyword) &&
+                                !m.IsKind(SyntaxKind.VirtualKeyword));
                     if (!useInterface)
                         modifiers = modifiers
                             .Union([SyntaxFactory.Token(SyntaxKind.OverrideKeyword).WithTrailingTrivia(SyntaxFactory.Space)]);

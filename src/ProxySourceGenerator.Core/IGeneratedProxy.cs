@@ -10,18 +10,18 @@ namespace ProxySourceGenerator;
 public interface IGeneratedProxy<TUnderlyingType>
 {    
     /// <summary>
-    /// Intercepts the <c>get</c> calls of all properties in the type, including base ones.
+    /// Intercepts the <c>get</c> calls of all properties in the type, including base ones. 
+    /// <para>Default: <c>(string propertyName, Func&lt;object&gt; getter) => getter();</c></para>
     /// </summary>
     public InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
     /// <summary>
-    /// Intercepts the <c>set</c> calls of all properties in the type, including base ones.
+    /// Intercepts the <c>set</c> calls of all properties in the type, including base ones. 
+    /// <para>Default: <c>(string propertyName, Action&lt;object&gt; setter, object value) => setter(value);</c></para>
     /// </summary>
     public InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
     /// <summary>
-    /// Intercepts the <c>method</c> calls of all properties in the type, including base ones.
-    /// string methodName,
-    /// InterceptMethodCallerHandler method,
-    /// Dictionary<string, object> parameters
+    /// Intercepts the <c>method</c> calls of all properties in the type, including base ones. 
+    /// <para>Default: <c>(string methodName, InterceptMethodCallerHandler method, Dictionary&lt;string, object&gt; parameters) => method(parameters);</c></para>
     /// </summary>
     public InterceptMethodHandler InterceptMethod { get; set; }
 
