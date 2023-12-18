@@ -34,7 +34,7 @@ Generates proxy classes from classes and interfaces.
 > //Directly call constructor of the proxy
 > var proxy = new TestClassProxy(testObj);
 > //Or call the generic accessor
-> var proxy = ProxyAccessor<ITestClass>.Create();
+> var proxy = ProxyAccessor<ITestClass>.Create(testObj);
 > ```
 - Intercept methods or properties:
 > ```csharp
@@ -82,7 +82,7 @@ public interface ITestClass
 
 ### Genereate from base class
 You can generate interfaces and its proxy classes from all classes that derive from a base class:
-```
+```csharp
 [GenerateProxy(GenerateForDerived=true)]
 public abstract ABaseClass //abstract is optional
 {
@@ -134,7 +134,7 @@ public sealed class ASealedClass //NonSense, can't be derived from this clas bec
 [GenerateProxy]
 public class AClass
 {
-    private string PrivateProp { get;set; } //doesn't generates
+    private string PrivateProp { get;set; } //not generated
     public int PublicProp { get; private set; } //generates only for the getter.
 }
 ```

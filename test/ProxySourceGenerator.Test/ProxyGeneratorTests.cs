@@ -144,32 +144,6 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
-    public void OnInterface()
-    {
-        VerifyProxy("""
-            using ProxySourceGenerator;
-
-            namespace Test;
-            [GenerateProxyAttribute]
-            public interface ITestClass
-            {
-                public void MethodProxied();
-            }
-
-            public class TestClass: ITestClass
-            {
-                public void MethodThatNotProxied()
-                {
-                }
-
-                public void MethodProxied()
-                {
-                }
-            }
-            """);
-    }
-
-    [TestMethod]
     public void DontUseInterface()
     {
         VerifyProxy("""
@@ -200,6 +174,52 @@ public class ProxyGeneratorTests : VerifyBase
                 }
 
                 protected override string ABaseMethod(
+                    int param1, 
+                    long param2, 
+                    List<int> param3
+                )
+                {
+                    return "";
+                }
+
+                public void NotProxiedMethod(){}
+            }
+            """);
+    }
+
+    [TestMethod]
+    public void OnInterface()
+    {
+        VerifyProxy("""
+            using ProxySourceGenerator;
+
+            namespace Test;
+            [GenerateProxy]
+            public interface ITestClass
+            {
+                string AProperty {get;set;}
+                public void Method();
+                internal int MethodReturnInt(string str);
+                protected string AProtectedMethod(
+                    int param1, 
+                    long param2, 
+                    List<int> param3
+                );
+            }
+            
+            public class TestClass: TestClassBase
+            {
+                public string AProperty {get;set;}
+                public void Method()
+                {
+                }
+            
+                internal int MethodReturnInt(string str)
+                {
+                    return 1;
+                }
+
+                protected string AProtectedMethod(
                     int param1, 
                     long param2, 
                     List<int> param3
