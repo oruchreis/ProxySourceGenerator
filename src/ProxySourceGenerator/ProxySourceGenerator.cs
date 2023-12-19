@@ -183,6 +183,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                 ).WithoutTrivia()
                             )
                             .WithExpressionBody(null)
+                            .WithInitializer(null)
                             .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken)).NormalizeWhitespace();
 
                         var declerationString = newPropertyDeclarationSyntax.ToFullString();
@@ -324,6 +325,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         .WithModifiers(new SyntaxTokenList().AddRange(modifiers))
                         .WithAccessorList(null)
                         .WithExpressionBody(null)
+                        .WithInitializer(null)
                         .WithoutTrivia()
                         .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken)).NormalizeWhitespace();
 
