@@ -12,9 +12,9 @@
     <Title>ProxySourceGenerator</Title>
     <Description>Generates proxies from classes and interfaces to intercept calls and properties.</Description>
     <PackageTags>proxy source generator intercept interceptor</PackageTags>
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
-    <FileVersion>1.0.2</FileVersion>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
+    <FileVersion>1.0.3</FileVersion>
     <Authors>oruchreis</Authors>
     <Copyright>oruchreis</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
@@ -24,18 +24,12 @@
     <RepositoryUrl>https://github.com/oruchreis/ProxySourceGenerator.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <LangVersion>preview</LangVersion>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />    
-    <!-- Generator dependencies -->
-    <PackageReference Include="NuGet.Configuration" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="NuGet.Protocol" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="NuGet.Frameworks" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="NuGet.Packaging" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="NuGet.Common" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="NuGet.Versioning" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
@@ -43,33 +37,10 @@
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />        
     <None Include="$(OutputPath)\ProxySourceGenerator.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)\ProxySourceGenerator.Core.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="true" />
-    
-    <None Include="$(PkgNuGet_Configuration)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PKGNuGet_Protocol)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PKGNuGet_Frameworks)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PKGNuGet_Packaging)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PKGNuGet_Common)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(PKGNuGet_Versioning)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    
     <None Include="../../README.md" Pack="true" PackagePath=""  />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProxySourceGenerator.Core\ProxySourceGenerator.Core.csproj" PrivateAssets="All" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-  </PropertyGroup>
-
-  <Target Name="GetDependencyTargetPaths">
-    <ItemGroup>
-      <TargetPathWithTargetPlatformMoniker Include="$(PkgNuGet_Configuration)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(PKGNuGet_Protocol)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(PKGNuGet_Frameworks)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(PKGNuGet_Packaging)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(PKGNuGet_Common)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(PKGNuGet_Versioning)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
-    </ItemGroup>
-  </Target>
   
 </Project>

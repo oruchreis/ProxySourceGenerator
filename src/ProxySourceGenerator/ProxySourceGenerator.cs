@@ -7,9 +7,13 @@ using System.Text;
 
 namespace ProxySourceGenerator;
 
+/// <summary>
+/// Proxy Source Generator
+/// </summary>
 [Generator]
 public class ProxySourceGenerator : IIncrementalGenerator
 {
+    /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var classDeclarations = context.SyntaxProvider
