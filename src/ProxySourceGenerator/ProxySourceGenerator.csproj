@@ -10,11 +10,11 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <PackageId>ProxySourceGenerator</PackageId>
     <Title>ProxySourceGenerator</Title>
-    <Description>Generates proxy class from classes or interfaces to intercept calls anbd properties.</Description>
+    <Description>Generates proxies from classes and interfaces to intercept calls and properties.</Description>
     <PackageTags>proxy source generator intercept interceptor</PackageTags>
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.1</FileVersion>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <FileVersion>1.0.2</FileVersion>
     <Authors>oruchreis</Authors>
     <Copyright>oruchreis</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
@@ -29,7 +29,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />    
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
     <!-- Generator dependencies -->
     <PackageReference Include="NuGet.Configuration" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="NuGet.Protocol" Version="6.8.0" GeneratePathProperty="true" PrivateAssets="all" />

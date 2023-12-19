@@ -1,13 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
-using NuGet.Protocol.Core.Types;
-using System;
 using System.Collections.Immutable;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Text;
 
 namespace ProxySourceGenerator;
