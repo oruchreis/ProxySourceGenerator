@@ -12,18 +12,18 @@ namespace Test
         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
         public static void RegisterProxy()
         {
-            ProxySourceGenerator.ProxyAccessor<ITestClassBase>.Register(underlyingObject => new TestClassBaseProxy(underlyingObject));
+            ProxyAccessor<ITestClassBase>.Register(underlyingObject => new TestClassBaseProxy(underlyingObject));
         }
     }
     
     partial class TestClassBaseProxy: ITestClassBase, IGeneratedProxy<ITestClassBase> 
     {
         /// <inheritdoc/>
-        public ProxySourceGenerator.InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
+        public InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
         /// <inheritdoc/>
-        public ProxySourceGenerator.InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
+        public InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
         /// <inheritdoc/>
-        public ProxySourceGenerator.InterceptMethodHandler InterceptMethod { get; set; }
+        public InterceptMethodHandler InterceptMethod { get; set; }
         /// <inheritdoc/>
         public ITestClassBase UnderlyingObject { get; set; }
         /// <inheritdoc/>

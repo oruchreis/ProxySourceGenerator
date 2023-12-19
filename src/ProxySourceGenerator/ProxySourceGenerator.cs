@@ -122,10 +122,12 @@ public class ProxySourceGenerator : IIncrementalGenerator
 
             var usings = typeDeclarationSyntax.Ancestors(false)
                 .SelectMany(a => a is NamespaceDeclarationSyntax nds ? nds.Usings : a is CompilationUnitSyntax cus ? cus.Usings : [])
+                .Select(u => u.WithoutTrivia().NormalizeWhitespace().ToFullString())
+                .Union(["using ProxySourceGenerator;"])
                 .Distinct();
             foreach (var usingNs in usings)
             {
-                strBuilder.AppendLine(usingNs.WithoutTrivia().NormalizeWhitespace().ToFullString());
+                strBuilder.AppendLine(usingNs);
             }
 
             strBuilder.AppendLine($$"""
@@ -224,18 +226,18 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
                         public static void RegisterProxy()
                         {
-                            ProxySourceGenerator.ProxyAccessor<{{baseTypeName}}>.Register(underlyingObject => new {{proxyClassName}}(underlyingObject));
+                            ProxyAccessor<{{baseTypeName}}>.Register(underlyingObject => new {{proxyClassName}}(underlyingObject));
                         }
                     }
                     
                     partial class {{proxyClassName}}: {{baseTypeName}}, IGeneratedProxy<{{baseTypeName}}> {{typeDeclarationSyntax.ConstraintClauses}}
                     {
                         /// <inheritdoc/>
-                        public ProxySourceGenerator.InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
+                        public InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
                         /// <inheritdoc/>
-                        public ProxySourceGenerator.InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
+                        public InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
                         /// <inheritdoc/>
-                        public ProxySourceGenerator.InterceptMethodHandler InterceptMethod { get; set; }
+                        public InterceptMethodHandler InterceptMethod { get; set; }
                         /// <inheritdoc/>
                         public {{baseTypeName}} UnderlyingObject { get; set; }
                         /// <inheritdoc/>
