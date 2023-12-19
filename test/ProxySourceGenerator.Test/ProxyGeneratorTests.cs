@@ -233,4 +233,29 @@ public class ProxyGeneratorTests : VerifyBase
             }
             """);
     }
+
+    [TestMethod]
+    public void KeepAttributes()
+    {
+        VerifyProxy("""
+            using ProxySourceGenerator;
+
+            namespace Test;
+            [GenerateProxyAttribute]
+            [JsonSerializable]
+            [System.Runtime.Serialization.DataContract(Namespace = "asd")]
+            public class TestClass
+            {
+                [System.Runtime.Serialization.DataMember(Order = 0)]
+                [JsonProperty]
+                public string AProperty { get; set; }                
+
+                [System.Runtime.Serialization.IgnoreDataMember]
+                [JsonIgnore]
+                public void Method()
+                {
+                }
+            }
+            """);
+    }
 }

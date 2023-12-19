@@ -150,6 +150,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     var propertyDeclarationSyntax = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as PropertyDeclarationSyntax ??
                         (member is not IPropertySymbol propertySymbol ? null :
                         SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(propertySymbol.Type.ToDisplayString()), propertySymbol.Name)
+                            .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                             .WithAccessorList(SyntaxFactory.AccessorList(new SyntaxList<AccessorDeclarationSyntax>(new[] {
                                 propertySymbol.GetMethod != null ? SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)) : null,
                                 propertySymbol.SetMethod != null ? SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)) : null }
@@ -159,17 +160,19 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     var methodDeclarationSyntax = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as MethodDeclarationSyntax ??
                         (member is not IMethodSymbol methodSymbol || methodSymbol.MethodKind != MethodKind.Ordinary ? null :
                         SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName(methodSymbol.ReturnType.ToDisplayString()), methodSymbol.Name)
-                        .WithTypeParameterList(methodSymbol.TypeParameters.Any() ? SyntaxFactory.TypeParameterList(SyntaxFactory.SeparatedList(
-                            methodSymbol.TypeParameters.Select(tp => SyntaxFactory.TypeParameter(tp.ToDisplayString()))
-                            )) : null)
-                        .WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(
-                            methodSymbol.Parameters.Select(p => SyntaxFactory.Parameter(SyntaxFactory.Identifier(p.Name)).WithType(SyntaxFactory.ParseTypeName(p.Type.ToDisplayString()))))
-                            )));
+                            .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
+                            .WithTypeParameterList(methodSymbol.TypeParameters.Any() ? SyntaxFactory.TypeParameterList(SyntaxFactory.SeparatedList(
+                                methodSymbol.TypeParameters.Select(tp => SyntaxFactory.TypeParameter(tp.ToDisplayString()))
+                                )) : null)
+                            .WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(
+                                methodSymbol.Parameters.Select(p => SyntaxFactory.Parameter(SyntaxFactory.Identifier(p.Name)).WithType(SyntaxFactory.ParseTypeName(p.Type.ToDisplayString()))))
+                                )));
 
                     if (propertyDeclarationSyntax != null)
                     {
                         var newPropertyDeclarationSyntax = propertyDeclarationSyntax
                             .WithModifiers(new SyntaxTokenList())
+                            .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                             .WithAccessorList(
                                 SyntaxFactory.AccessorList(propertyDeclarationSyntax.AccessorList != null ?
                                     new SyntaxList<AccessorDeclarationSyntax>(propertyDeclarationSyntax.AccessorList.Accessors
@@ -199,6 +202,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     {
                         methodDeclarationSyntax = methodDeclarationSyntax
                             .WithModifiers(new SyntaxTokenList())
+                            .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                             .WithBody(null)
                             .WithExpressionBody(null)
                             .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken)).NormalizeWhitespace();
@@ -220,6 +224,15 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     """);
             }
 
+            var typeAttributes = SyntaxFactory.List(typeSymbol.GetAttributes()
+                .Where(ad => ad.AttributeClass?.ToDisplayString() != "ProxySourceGenerator.GenerateProxyAttribute")
+                .Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new []{
+                    ad.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax attrSyntax ? attrSyntax :
+                    SyntaxFactory.Attribute(SyntaxFactory.ParseName(ad.AttributeClass!.ToDisplayString()), SyntaxFactory.AttributeArgumentList(SyntaxFactory.SeparatedList(new[]
+                    {
+                        SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression(string.Join(", ", ad.NamedArguments.Select(na => $"{na.Key} = {na.Value.ToCSharpString()}"))))
+                    })))
+                }))));
             var baseTypeName = $"{(useInterface ? "I" : "")}{className}{classTypeArguments}";
             strBuilder.AppendLine($$"""
                     internal static class {{proxyClassName}}Initializer
@@ -231,6 +244,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         }
                     }
                     
+                    {{typeAttributes.ToFullString()}}
                     partial class {{proxyClassName}}: {{baseTypeName}}, IGeneratedProxy<{{baseTypeName}}> {{typeDeclarationSyntax.ConstraintClauses}}
                     {
                         /// <inheritdoc/>
@@ -254,7 +268,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     Accessibility.ProtectedOrInternal when !ctor.IsImplicitlyDeclared => "protected internal",
                     Accessibility.ProtectedAndInternal when !ctor.IsImplicitlyDeclared => "private protected",
                     _ => "public"
-                    
+
                 };
                 strBuilder.AppendLine($$"""
                             {{accessibilityKeyword}} {{proxyClassName}} ({{string.Join(", ", new[] { $"{baseTypeName} underlyingObject" }.Concat(ctor.Parameters.Select(p => p.ToDisplayString())))}})
@@ -270,10 +284,18 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
                 (m.DeclaredAccessibility != Accessibility.Private)))
             {
+                var attributeListSyntaxFromSymbol = member.GetAttributes().Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new []{
+                    SyntaxFactory.Attribute(SyntaxFactory.ParseName(ad.AttributeClass!.ToDisplayString()), SyntaxFactory.AttributeArgumentList(SyntaxFactory.SeparatedList(new[]
+                    {
+                        SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression(string.Join(", ", ad.NamedArguments.Select(na => $"{na.Key} = {na.Value.ToCSharpString()}"))))
+                    })))
+                })));
+
                 var propertySymbol = member as IPropertySymbol;
                 var propertyDeclarationSyntax = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as PropertyDeclarationSyntax ??
                         (propertySymbol == null ? null :
                         SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(propertySymbol.Type.ToDisplayString()), propertySymbol.Name)
+                            .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>(attributeListSyntaxFromSymbol))
                             .WithAccessorList(SyntaxFactory.AccessorList(new SyntaxList<AccessorDeclarationSyntax>(new[] {
                                 propertySymbol.GetMethod != null ? SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)) : null,
                                 propertySymbol.SetMethod != null ? SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)) : null }
@@ -293,6 +315,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 var methodDeclarationSyntax = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as MethodDeclarationSyntax ??
                         (methodSymbol == null || methodSymbol.MethodKind != MethodKind.Ordinary ? null :
                         SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName(methodSymbol.ReturnType.ToDisplayString()), methodSymbol.Name)
+                        .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>(attributeListSyntaxFromSymbol))
                         .WithModifiers(SyntaxFactory.TokenList(methodSymbol.DeclaredAccessibility switch
                         {
                             Accessibility.Public => SyntaxFactory.Token(SyntaxKind.PublicKeyword),
@@ -312,9 +335,9 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 if (propertyDeclarationSyntax != null && propertySymbol != null)
                 {
                     var modifiers = propertyDeclarationSyntax.Modifiers
-                            .Where(m => 
-                                !m.IsKind(SyntaxKind.NewKeyword) && 
-                                !m.IsKind(SyntaxKind.AbstractKeyword) && 
+                            .Where(m =>
+                                !m.IsKind(SyntaxKind.NewKeyword) &&
+                                !m.IsKind(SyntaxKind.AbstractKeyword) &&
                                 !m.IsKind(SyntaxKind.OverrideKeyword) &&
                                 !m.IsKind(SyntaxKind.VirtualKeyword));
                     if (!useInterface)
@@ -327,7 +350,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         .WithExpressionBody(null)
                         .WithInitializer(null)
                         .WithoutTrivia()
-                        .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken)).NormalizeWhitespace();
+                        .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken)).NormalizeWhitespace(eol: " ");
 
                     var declerationString = newPropertyDeclarationSyntax.ToFullString();
                     if (distinctMembers.Contains(declerationString))
@@ -335,7 +358,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     distinctMembers.Add(declerationString);
 
                     strBuilder.AppendLine($$"""
-                                #region {{declerationString}} Property
+                                #region {{declerationString.Replace("\n", "").Replace("\r","")}} Property
                         """);
 
                     var hasGet = false;
@@ -400,9 +423,9 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 else if (methodDeclarationSyntax != null && methodSymbol != null)
                 {
                     var modifiers = methodDeclarationSyntax.Modifiers
-                            .Where(m => 
-                                !m.IsKind(SyntaxKind.NewKeyword) && 
-                                !m.IsKind(SyntaxKind.AbstractKeyword) && 
+                            .Where(m =>
+                                !m.IsKind(SyntaxKind.NewKeyword) &&
+                                !m.IsKind(SyntaxKind.AbstractKeyword) &&
                                 !m.IsKind(SyntaxKind.OverrideKeyword) &&
                                 !m.IsKind(SyntaxKind.VirtualKeyword));
                     if (!useInterface)
@@ -411,6 +434,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
 
                     methodDeclarationSyntax = methodDeclarationSyntax
                         .WithModifiers(new SyntaxTokenList().AddRange(modifiers))
+                        .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                         .WithBody(null)
                         .WithExpressionBody(null)
                         .WithoutTrivia()

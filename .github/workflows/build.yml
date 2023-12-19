@@ -55,4 +55,3 @@ jobs:
         PROJECT_FILE_PATH: src/ProxySourceGenerator/ProxySourceGenerator.csproj
         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
         TAG_FORMAT: v*
-        INCLUDE_SYMBOLS: true
