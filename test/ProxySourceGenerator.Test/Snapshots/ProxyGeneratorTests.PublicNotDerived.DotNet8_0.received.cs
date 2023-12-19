@@ -10,6 +10,7 @@ namespace Test
         string APropertyWithExp2 { get; set; }
         string APropertyOnlyGetter { get; }
         string APropertyOnlySetter { set; }
+        string APropertyWithDefaultValue { get; set; }
         string APropertyOnlyPrivateSetter { get; }
         void Method();
         int MethodReturnInt(string str);
@@ -170,6 +171,33 @@ namespace Test
             }
         }
         #endregion //public string APropertyOnlySetter Property
+        #region public string APropertyWithDefaultValue Property
+        protected virtual string OnGetAPropertyWithDefaultValue(Func<string> getter)
+        {
+            return getter();
+        }
+        protected virtual void OnSetAPropertyWithDefaultValue(Action<string> setter, string value)
+        {
+            setter(value);
+        }
+        public string APropertyWithDefaultValue
+        {
+            get 
+            {
+                if (InterceptPropertyGetter != null)
+                    return (string)InterceptPropertyGetter("APropertyWithDefaultValue", () => OnGetAPropertyWithDefaultValue(() => UnderlyingObject.APropertyWithDefaultValue));
+                else
+                    return OnGetAPropertyWithDefaultValue(() => UnderlyingObject.APropertyWithDefaultValue);
+            }
+            set
+            {
+                if (InterceptPropertySetter != null)
+                    InterceptPropertySetter("APropertyWithDefaultValue", value => OnSetAPropertyWithDefaultValue(v => UnderlyingObject.APropertyWithDefaultValue = v, (string)value), value);
+                else
+                    OnSetAPropertyWithDefaultValue(v => UnderlyingObject.APropertyWithDefaultValue = v, value);
+            }
+        }
+        #endregion //public string APropertyWithDefaultValue Property
         #region public string APropertyOnlyPrivateSetter Property
         protected virtual string OnGetAPropertyOnlyPrivateSetter(Func<string> getter)
         {

@@ -69,6 +69,7 @@ public class ProxyGeneratorTests : VerifyBase
                 }
                 public string APropertyOnlyGetter { get; }
                 public string APropertyOnlySetter { set; }
+                public string APropertyWithDefaultValue { get; set; } = "Default";
                 public string APropertyOnlyPrivateSetter { get; private set; }
                 public void Method()
                 {
