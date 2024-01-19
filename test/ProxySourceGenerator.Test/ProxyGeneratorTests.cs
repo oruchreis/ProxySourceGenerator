@@ -235,6 +235,35 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
+    public void OnInterfaceDerived()
+    {
+        VerifyProxy("""
+            using ProxySourceGenerator;
+
+            namespace Test;
+            [GenerateProxy(GenerateForDerived=true)]
+            public interface ITestClassBase
+            {
+                public void BaseMethod();
+            }
+
+            public interface ITestClass: ITestClassBase
+            {
+                string AProperty {get;set;}
+                public void Method();
+                internal int MethodReturnInt(string str);
+                protected string AProtectedMethod(
+                    int param1, 
+                    long param2, 
+                    List<int> param3
+                );
+            }
+            
+            
+            """);
+    }
+
+    [TestMethod]
     public void KeepAttributes()
     {
         VerifyProxy("""

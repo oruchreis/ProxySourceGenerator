@@ -91,9 +91,12 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 }
             }
 
-            return typeSymbol?.BaseType != null && typeSymbol.BaseType.Name != "Object" && typeSymbol.BaseType.ContainingNamespace.Name != "System" ?
-                RecursiveFindAttribute(typeSymbol.BaseType, firstTypeSymbol) :
-                null;
+            return typeSymbol switch
+            {
+                _ when typeSymbol?.BaseType != null && typeSymbol.BaseType.Name != "Object" && typeSymbol.BaseType.ContainingNamespace.Name != "System" => RecursiveFindAttribute(typeSymbol.BaseType, firstTypeSymbol),
+                _ when typeSymbol != null && typeSymbol.BaseType == null && typeSymbol.Interfaces.Length > 0 => typeSymbol.Interfaces.Select(interfaceType => RecursiveFindAttribute(interfaceType, firstTypeSymbol)).FirstOrDefault(attr => attr != null),
+                _ => null
+            };
         }
     }
 
@@ -226,7 +229,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
 
             var typeAttributes = SyntaxFactory.List(typeSymbol.GetAttributes()
                 .Where(ad => ad.AttributeClass?.ToDisplayString() != "ProxySourceGenerator.GenerateProxyAttribute")
-                .Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new []{
+                .Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[]{
                     ad.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax attrSyntax ? attrSyntax :
                     SyntaxFactory.Attribute(SyntaxFactory.ParseName(ad.AttributeClass!.ToDisplayString()), SyntaxFactory.AttributeArgumentList(SyntaxFactory.SeparatedList(new[]
                     {
@@ -257,8 +260,15 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         public {{baseTypeName}} UnderlyingObject { get; set; }
                         /// <inheritdoc/>
                         {{baseTypeName}} IGeneratedProxy<{{baseTypeName}}>.Access => ({{baseTypeName}}) this;
+
+                        public {{proxyClassName}}({{baseTypeName}} underlyingObject): base()
+                        {
+                            UnderlyingObject = underlyingObject;
+                        }
                 """);
+
             foreach (var ctor in typeSymbol.InstanceConstructors.Where(ctor =>
+                !ctor.Parameters.IsEmpty &&
                 ctor.DeclaredAccessibility != Accessibility.Private))
             {
                 var accessibilityKeyword = ctor.DeclaredAccessibility switch
@@ -284,7 +294,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
                 (m.DeclaredAccessibility != Accessibility.Private)))
             {
-                var attributeListSyntaxFromSymbol = member.GetAttributes().Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new []{
+                var attributeListSyntaxFromSymbol = member.GetAttributes().Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[]{
                     SyntaxFactory.Attribute(SyntaxFactory.ParseName(ad.AttributeClass!.ToDisplayString()), SyntaxFactory.AttributeArgumentList(SyntaxFactory.SeparatedList(new[]
                     {
                         SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression(string.Join(", ", ad.NamedArguments.Select(na => $"{na.Key} = {na.Value.ToCSharpString()}"))))
@@ -358,7 +368,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     distinctMembers.Add(declerationString);
 
                     strBuilder.AppendLine($$"""
-                                #region {{declerationString.Replace("\n", "").Replace("\r","")}} Property
+                                #region {{declerationString.Replace("\n", "").Replace("\r", "")}} Property
                         """);
 
                     var hasGet = false;
@@ -508,6 +518,16 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     foreach (var member in RecursiveFindMembers(typeSymbol.BaseType))
                     {
                         yield return member;
+                    }
+                }
+                if (typeSymbol != null && typeSymbol.BaseType == null && typeSymbol.AllInterfaces.Length > 0)
+                {
+                    foreach (var interfaceType in typeSymbol.AllInterfaces)
+                    {
+                        foreach (var member in RecursiveFindMembers(interfaceType))
+                        {
+                            yield return member;
+                        }
                     }
                 }
             }

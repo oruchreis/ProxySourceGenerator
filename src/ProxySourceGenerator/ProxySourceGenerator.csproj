@@ -12,9 +12,9 @@
     <Title>ProxySourceGenerator</Title>
     <Description>Generates proxies from classes and interfaces to intercept calls and properties.</Description>
     <PackageTags>proxy source generator intercept interceptor</PackageTags>
-    <Version>1.0.8</Version>
-    <AssemblyVersion>1.0.8</AssemblyVersion>
-    <FileVersion>1.0.8</FileVersion>
+    <Version>1.0.9</Version>
+    <AssemblyVersion>1.0.9</AssemblyVersion>
+    <FileVersion>1.0.9</FileVersion>
     <Authors>oruchreis</Authors>
     <Copyright>oruchreis</Copyright>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
