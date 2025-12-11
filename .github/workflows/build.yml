@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Caching
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-${{ hashFiles('**/*.csproj') }} #hash of project files
@@ -28,9 +28,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: |
-            8.x
-    - name: Test .NET 8
-      run: dotnet test -v normal -f net8.0 --logger "console;verbosity=detailed" --nologo /nologo      
+            9.x
+    - name: Test .NET 9
+      run: dotnet test -v normal -f net9.0 --logger "console;verbosity=detailed" --nologo /nologo      
       
   upload-packages:
     needs: [ubuntu-test] 
@@ -39,7 +39,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Caching
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-${{ hashFiles('**/*.csproj') }} #hash of project files
@@ -48,7 +48,7 @@ jobs:
     - name: Setup .NET Sdk
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '8.x'
+        dotnet-version: '9.x'
     - name: Publish Nuget Package
       uses: alirezanet/publish-nuget@v3.1.0
       with:

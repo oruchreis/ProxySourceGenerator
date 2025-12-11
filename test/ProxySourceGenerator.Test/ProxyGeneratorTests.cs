@@ -287,4 +287,28 @@ public class ProxyGeneratorTests : VerifyBase
             }
             """);
     }
+
+    [TestMethod]
+    public void AsyncMethod()
+    {
+        VerifyProxy("""
+            using ProxySourceGenerator;
+            using System.Threading.Tasks;
+
+            namespace Test;
+            [GenerateProxyAttribute]
+            public class TestClass
+            {
+                public async Task<bool> Method1Async(string param1, int param2)
+                {
+                    return true;
+                }
+
+                public Task<int> Method2Async(string param1, int param2)
+                {
+                    return Task.FromResult(0);
+                }
+            }
+            """);
+    }
 }

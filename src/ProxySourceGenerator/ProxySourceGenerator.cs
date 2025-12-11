@@ -257,6 +257,8 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         /// <inheritdoc/>
                         public InterceptMethodHandler InterceptMethod { get; set; }
                         /// <inheritdoc/>
+                        public InterceptAsyncMethodHandler InterceptAsyncMethod { get; set; }
+                        /// <inheritdoc/>
                         public {{baseTypeName}} UnderlyingObject { get; set; }
                         /// <inheritdoc/>
                         {{baseTypeName}} IGeneratedProxy<{{baseTypeName}}>.Access => ({{baseTypeName}}) this;
@@ -442,6 +444,15 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         modifiers = modifiers
                             .Union([SyntaxFactory.Token(SyntaxKind.OverrideKeyword).WithTrailingTrivia(SyntaxFactory.Space)]);
 
+                    var hasAsync = methodSymbol.IsAsync;
+                    var isAwaitable = IsMethodAwaitable(methodSymbol, compilation);
+                    var interceptMethod = isAwaitable ? "InterceptAsyncMethod" : "InterceptMethod";
+                    if (!hasAsync && isAwaitable)
+                    {
+                        modifiers = modifiers
+                            .Union([SyntaxFactory.Token(SyntaxKind.AsyncKeyword).WithTrailingTrivia(SyntaxFactory.Space)]);
+                    }
+
                     methodDeclarationSyntax = methodDeclarationSyntax
                         .WithModifiers(new SyntaxTokenList().AddRange(modifiers))
                         .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
@@ -472,6 +483,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         $"{{On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))}); return null;}}"
                         :
                         $"On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))})";
+
                     strBuilder.AppendLine($$"""
                                 protected virtual {{methodSymbol.ReturnType.ToDisplayString()}} On{{methodNameSyntax}}({{methodDelegate}} baseMethod{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"{p.Type} {p.Name}")))}})
                                     {{methodDeclarationSyntax.ConstraintClauses}}
@@ -480,8 +492,8 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                 }
                                 {{declerationString}}
                                 {
-                                    if (InterceptMethod != null)
-                                        {{(methodSymbol.ReturnsVoid ? string.Empty : $"return ({methodSymbol.ReturnType.ToDisplayString()})")}}InterceptMethod(
+                                    if ({{interceptMethod}} != null)
+                                        {{(methodSymbol.ReturnsVoid ? string.Empty : $"return {(isAwaitable ? "await " : string.Empty)}({methodSymbol.ReturnType.ToDisplayString()})")}}{{interceptMethod}}(
                                             "{{methodNameSyntax}}", 
                                             p => {{callUnderlyingObjectMethod}},
                                             new Dictionary<string, object> {
@@ -531,6 +543,80 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     }
                 }
             }
+
+            static bool IsMethodAwaitable(IMethodSymbol method, Compilation compilation)
+            {
+                if (method == null)
+                    return false;
+
+                if (method.IsAsync)
+                    return true;
+
+                var returnType = method.ReturnType;
+                return IsTypeAwaitable(returnType, compilation);
+            }
+
+            static bool IsTypeAwaitable(ITypeSymbol type, Compilation compilation)
+            {
+                if (type == null || type.SpecialType == SpecialType.System_Void)
+                    return false;
+
+                var taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+                var taskOfTType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+                var valueTaskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
+                var valueTaskOfTType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+
+                if (taskType != null && SymbolEqualityComparer.Default.Equals(type, taskType))
+                    return true;
+
+                if (taskOfTType != null && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, taskOfTType))
+                    return true;
+
+                if (valueTaskType != null && SymbolEqualityComparer.Default.Equals(type, valueTaskType))
+                    return true;
+
+                if (valueTaskOfTType != null && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, valueTaskOfTType))
+                    return true;
+
+                var getAwaiter = type
+                    .GetMembers("GetAwaiter")
+                    .OfType<IMethodSymbol>()
+                    .FirstOrDefault(m => m.Parameters.Length == 0);
+
+                if (getAwaiter == null)
+                    return false;
+
+                var awaiterType = getAwaiter.ReturnType;
+                if (awaiterType == null)
+                    return false;
+
+                var hasIsCompleted = awaiterType
+                    .GetMembers("IsCompleted")
+                    .OfType<IPropertySymbol>()
+                    .Any(p => p.Type.SpecialType == SpecialType.System_Boolean && !p.IsWriteOnly);
+
+                if (!hasIsCompleted)
+                    return false;
+
+                var hasGetResult = awaiterType
+                    .GetMembers("GetResult")
+                    .OfType<IMethodSymbol>()
+                    .Any(m => m.Parameters.Length == 0);
+
+                if (!hasGetResult)
+                    return false;
+
+                var notifyCompletion = compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.INotifyCompletion");
+                if (notifyCompletion != null &&
+                    !awaiterType.AllInterfaces.Contains(notifyCompletion, SymbolEqualityComparer.Default))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+
         }
     }
 
