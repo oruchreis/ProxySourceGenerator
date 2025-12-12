@@ -308,6 +308,11 @@ public class ProxyGeneratorTests : VerifyBase
                 {
                     return Task.FromResult(0);
                 }
+
+                public Task Method3Async()
+                {
+                    return Task.CompletedTask;
+                }
             }
             """);
     }

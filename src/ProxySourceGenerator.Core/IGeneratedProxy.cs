@@ -26,6 +26,14 @@ public interface IGeneratedProxy<TUnderlyingType>
     public InterceptMethodHandler InterceptMethod { get; set; }
 
     /// <summary>
+    /// Gets or sets the delegate that intercepts asynchronous method invocations.
+    /// </summary>
+    /// <remarks>Use this property to provide custom logic that is executed when an asynchronous method is
+    /// called. This can be used for logging, validation, or modifying the behavior of asynchronous
+    /// operations.</remarks>
+    public InterceptAsyncMethodHandler InterceptAsyncMethod { get; set; }
+
+    /// <summary>
     /// Returns the underlying object that proxied. This object is the original object reference that proxied.
     /// </summary>
     public TUnderlyingType UnderlyingObject { get; set; }

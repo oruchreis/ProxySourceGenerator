@@ -479,10 +479,19 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         _ => $"Func<{string.Join(", ", methodSymbol.Parameters.Select(p => p.Type.ToDisplayString()).Concat([methodSymbol.ReturnType.ToDisplayString()]))}>"
                     };
 
-                    var callUnderlyingObjectMethod = methodSymbol.ReturnsVoid ?
-                        $"{{On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))}); return null;}}"
+                    var taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+                    var valueTaskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
+
+                    var returnsVoid = methodSymbol.ReturnsVoid ||
+                        SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, taskType) ||
+                        SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, valueTaskType);
+                    var resultType = isAwaitable ? GetAsyncResultType(methodSymbol.ReturnType, compilation)! : methodSymbol.ReturnType;
+
+                    // if the method is void, Task, or ValueTask, we need to return null after calling the underlying method
+                    var callUnderlyingObjectMethod = returnsVoid ?
+                        $"{{{(isAwaitable ? "await " : string.Empty)}On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))}); return null;}}"
                         :
-                        $"On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))})";
+                        $"{(isAwaitable ? "await " : string.Empty)}On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))})";
 
                     strBuilder.AppendLine($$"""
                                 protected virtual {{methodSymbol.ReturnType.ToDisplayString()}} On{{methodNameSyntax}}({{methodDelegate}} baseMethod{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"{p.Type} {p.Name}")))}})
@@ -493,15 +502,15 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                 {{declerationString}}
                                 {
                                     if ({{interceptMethod}} != null)
-                                        {{(methodSymbol.ReturnsVoid ? string.Empty : $"return {(isAwaitable ? "await " : string.Empty)}({methodSymbol.ReturnType.ToDisplayString()})")}}{{interceptMethod}}(
+                                        {{(returnsVoid ? string.Empty : $"return ({resultType.ToDisplayString()})")}}{{(isAwaitable ? "await " : string.Empty)}}{{interceptMethod}}(
                                             "{{methodNameSyntax}}", 
-                                            p => {{callUnderlyingObjectMethod}},
+                                            {{(isAwaitable ? "async " : string.Empty)}}p => {{callUnderlyingObjectMethod}},
                                             new Dictionary<string, object> {
                                                 {{string.Join(",\n", methodSymbol.Parameters.Select(p => $"[\"{p.Name}\"] = {p.Name}"))}}
                                             }
                                             );
                                     else
-                                        {{(methodSymbol.ReturnsVoid ? string.Empty : "return ")}}On{{methodNameSyntax}}(UnderlyingObject.{{methodNameSyntax}}{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => p.Name)))}});
+                                        {{(returnsVoid ? string.Empty : "return ")}}{{(isAwaitable ? "await " : string.Empty)}}On{{methodNameSyntax}}(UnderlyingObject.{{methodNameSyntax}}{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => p.Name)))}});
                                 }
                         """);
                     strBuilder.AppendLine($$"""
@@ -616,7 +625,32 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 return true;
             }
 
+            ITypeSymbol? GetAsyncResultType(ITypeSymbol typeSymbol, Compilation compilation)
+            {
+                // Task<TResult> tanımı
+                var taskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+                // ValueTask<TResult> tanımı
+                var valueTaskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
 
+                if (typeSymbol is not INamedTypeSymbol named)
+                    return null;
+
+                if (taskOfT is not null &&
+                    SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, taskOfT))
+                {
+                    // Task<TResult>
+                    return named.TypeArguments[0];
+                }
+
+                if (valueTaskOfT is not null &&
+                    SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, valueTaskOfT))
+                {
+                    // ValueTask<TResult>
+                    return named.TypeArguments[0];
+                }
+
+                return null;
+            }
         }
     }
 

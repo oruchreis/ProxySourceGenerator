@@ -75,7 +75,7 @@ public delegate object InterceptMethodHandler(
 /// corresponding argument values.</param>
 /// <returns>An object representing the result of the intercepted method call. The type and meaning of the result depend on the
 /// intercepted method.</returns>
-public delegate object InterceptAsyncMethodHandler(
+public delegate Task<object> InterceptAsyncMethodHandler(
     string methodName,
     InterceptAsyncMethodCallerHandler methodAsync,
     Dictionary<string, object> parameters
