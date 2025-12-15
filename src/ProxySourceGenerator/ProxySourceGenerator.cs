@@ -116,6 +116,9 @@ public class ProxySourceGenerator : IIncrementalGenerator
 
             var useInterface = semanticFound.Attribute?.UseInterface ?? false;
             var autoGenerateProxyInterface = semanticFound.Attribute?.AutoGenerateProxyInterface ?? false;
+            var onGetterProxyName = semanticFound.Attribute?.GetterProxyNamePattern ?? GenerateProxyAttribute.DefaultGetterProxyNamePattern;
+            var onSetterProxyName = semanticFound.Attribute?.SetterProxyNamePattern ?? GenerateProxyAttribute.DefaultSetterProxyNamePattern;
+            var onMethodProxyName = semanticFound.Attribute?.MethodProxyNamePattern ?? GenerateProxyAttribute.DefaultMethodProxyNamePattern;
             var interfaceDeclarationSyntax = typeDeclarationSyntax as InterfaceDeclarationSyntax;
 
             var strBuilder = new StringBuilder();
@@ -374,12 +377,13 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         """);
 
                     var hasGet = false;
+                    var onGetterName = onGetterProxyName.Replace("$1", member.Name);
                     if (propertyDeclarationSyntax.AccessorList == null ||
                         propertyDeclarationSyntax.AccessorList.Accessors.Any(ads => ads.IsKind(SyntaxKind.GetAccessorDeclaration) &&
                         ads.Modifiers.All(m => !m.IsKind(SyntaxKind.PrivateKeyword) && !m.IsKind(SyntaxKind.InternalKeyword))))
                     {
                         strBuilder.AppendLine($$"""
-                                protected virtual {{propertySymbol.Type.ToDisplayString()}} OnGet{{member.Name}}(Func<{{propertySymbol.Type.ToDisplayString()}}> getter)
+                                protected virtual {{propertySymbol.Type.ToDisplayString()}} {{onGetterName}}(Func<{{propertySymbol.Type.ToDisplayString()}}> getter)
                                 {
                                     return getter();
                                 }
@@ -388,12 +392,13 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     }
 
                     var hasSet = false;
+                    var onSetterName = onSetterProxyName.Replace("$1", member.Name);
                     if (propertyDeclarationSyntax.AccessorList != null &&
                         propertyDeclarationSyntax.AccessorList.Accessors.Any(ads => ads.IsKind(SyntaxKind.SetAccessorDeclaration) &&
                         ads.Modifiers.All(m => !m.IsKind(SyntaxKind.PrivateKeyword) && !m.IsKind(SyntaxKind.InternalKeyword))))
                     {
                         strBuilder.AppendLine($$"""
-                                protected virtual void OnSet{{member.Name}}(Action<{{propertySymbol.Type.ToDisplayString()}}> setter, {{propertySymbol.Type.ToDisplayString()}} value)
+                                protected virtual void {{onSetterName}}(Action<{{propertySymbol.Type.ToDisplayString()}}> setter, {{propertySymbol.Type.ToDisplayString()}} value)
                                 {
                                     setter(value);
                                 }
@@ -410,9 +415,9 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                     get 
                                     {
                                         if (InterceptPropertyGetter != null)
-                                            return ({{propertySymbol.Type.ToDisplayString()}})InterceptPropertyGetter("{{member.Name}}", () => OnGet{{member.Name}}(() => UnderlyingObject.{{member.Name}}));
+                                            return ({{propertySymbol.Type.ToDisplayString()}})InterceptPropertyGetter("{{member.Name}}", () => {{onGetterName}}(() => UnderlyingObject.{{member.Name}}));
                                         else
-                                            return OnGet{{member.Name}}(() => UnderlyingObject.{{member.Name}});
+                                            return {{onGetterName}}(() => UnderlyingObject.{{member.Name}});
                                     }
                         """);
                     if (hasSet)
@@ -420,9 +425,9 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                     set
                                     {
                                         if (InterceptPropertySetter != null)
-                                            InterceptPropertySetter("{{member.Name}}", value => OnSet{{member.Name}}(v => UnderlyingObject.{{member.Name}} = v, ({{propertySymbol.Type.ToDisplayString()}})value), value);
+                                            InterceptPropertySetter("{{member.Name}}", value => {{onSetterName}}(v => UnderlyingObject.{{member.Name}} = v, ({{propertySymbol.Type.ToDisplayString()}})value), value);
                                         else
-                                            OnSet{{member.Name}}(v => UnderlyingObject.{{member.Name}} = v, value);
+                                            {{onSetterName}}(v => UnderlyingObject.{{member.Name}} = v, value);
                                     }
                         """);
                     strBuilder.AppendLine($$"""
