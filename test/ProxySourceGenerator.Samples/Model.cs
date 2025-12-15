@@ -27,6 +27,11 @@ public class Model : BaseModel, IModel
     {
         return str.TrimEnd();
     }
+
+    protected virtual void ProtectedMethod(string strProp, int intProp)
+    {
+        // Do something
+    }
 }
 
 public partial class ModelProxy

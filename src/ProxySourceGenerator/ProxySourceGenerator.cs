@@ -151,7 +151,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
 
                 foreach (var member in RecursiveFindMembers(typeSymbol).Where(m => !m.IsStatic &&
                     (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
-                    (m.DeclaredAccessibility != Accessibility.Private)))
+                    ((!useInterface && m.DeclaredAccessibility != Accessibility.Private) || (useInterface && m.DeclaredAccessibility == Accessibility.Public))))
                 {
                     var propertyDeclarationSyntax = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as PropertyDeclarationSyntax ??
                         (member is not IPropertySymbol propertySymbol ? null :
@@ -174,14 +174,10 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                 methodSymbol.Parameters.Select(p => SyntaxFactory.Parameter(SyntaxFactory.Identifier(p.Name)).WithType(SyntaxFactory.ParseTypeName(p.Type.ToDisplayString()))))
                                 )));
 
-                    var modifiers = GetModifiers(member, 
-                        except: [SyntaxKind.NewKeyword, SyntaxKind.AbstractKeyword, 
-                            SyntaxKind.OverrideKeyword, SyntaxKind.VirtualKeyword, SyntaxKind.AsyncKeyword]);
-
                     if (propertyDeclarationSyntax != null)
                     {
                         var newPropertyDeclarationSyntax = propertyDeclarationSyntax
-                            .WithModifiers(modifiers)
+                            .WithModifiers(new SyntaxTokenList())
                             .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                             .WithAccessorList(
                                 SyntaxFactory.AccessorList(propertyDeclarationSyntax.AccessorList != null ?
@@ -211,7 +207,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     else if (methodDeclarationSyntax != null)
                     {
                         methodDeclarationSyntax = methodDeclarationSyntax
-                            .WithModifiers(modifiers)
+                            .WithModifiers(new SyntaxTokenList())
                             .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                             .WithBody(null)
                             .WithExpressionBody(null)
@@ -278,7 +274,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
 
             foreach (var ctor in typeSymbol.InstanceConstructors.Where(ctor =>
                 !ctor.Parameters.IsEmpty &&
-                ctor.DeclaredAccessibility != Accessibility.Private))
+                ((!useInterface && ctor.DeclaredAccessibility != Accessibility.Private) || (useInterface && ctor.DeclaredAccessibility == Accessibility.Public))))
             {
                 var accessibilityKeyword = ctor.DeclaredAccessibility switch
                 {
@@ -301,7 +297,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
             distinctMembers = [];
             foreach (var member in RecursiveFindMembers(typeSymbol).Where(m => !m.IsStatic && (useInterface || m.IsVirtual || m.IsAbstract) &&
                 (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
-                (m.DeclaredAccessibility != Accessibility.Private)))
+                ((!useInterface && m.DeclaredAccessibility != Accessibility.Private) || (useInterface && m.DeclaredAccessibility == Accessibility.Public))))
             {
                 var attributeListSyntaxFromSymbol = member.GetAttributes().Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[]{
                     SyntaxFactory.Attribute(SyntaxFactory.ParseName(ad.AttributeClass!.ToDisplayString()), SyntaxFactory.AttributeArgumentList(SyntaxFactory.SeparatedList(new[]
