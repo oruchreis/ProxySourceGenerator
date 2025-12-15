@@ -476,6 +476,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         """);
 
                     var methodNameSyntax = methodSymbol.IsGenericMethod ? $"{methodSymbol.Name}<{string.Join(", ", methodSymbol.TypeParameters.Select(tp => tp.ToDisplayString()))}>" : methodSymbol.Name;
+                    var onMethodName = onMethodProxyName.Replace("$1", methodNameSyntax);
                     var methodDelegate = methodSymbol.Parameters.Length switch
                     {
                         0 when methodSymbol.ReturnsVoid => "Action",
@@ -494,12 +495,12 @@ public class ProxySourceGenerator : IIncrementalGenerator
 
                     // if the method is void, Task, or ValueTask, we need to return null after calling the underlying method
                     var callUnderlyingObjectMethod = returnsVoid ?
-                        $"{{{(isAwaitable ? "await " : string.Empty)}On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))}); return null;}}"
+                        $"{{{(isAwaitable ? "await " : string.Empty)}{onMethodName}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))}); return null;}}"
                         :
-                        $"{(isAwaitable ? "await " : string.Empty)}On{methodNameSyntax}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))})";
+                        $"{(isAwaitable ? "await " : string.Empty)}{onMethodName}(UnderlyingObject.{methodNameSyntax}{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"({p.Type.ToDisplayString()})p[\"{p.Name}\"]")))})";
 
                     strBuilder.AppendLine($$"""
-                                protected virtual {{methodSymbol.ReturnType.ToDisplayString()}} On{{methodNameSyntax}}({{methodDelegate}} baseMethod{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"{p.Type} {p.Name}")))}})
+                                protected virtual {{methodSymbol.ReturnType.ToDisplayString()}} {{onMethodName}}({{methodDelegate}} baseMethod{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => $"{p.Type} {p.Name}")))}})
                                     {{methodDeclarationSyntax.ConstraintClauses}}
                                 {
                                     {{(methodSymbol.ReturnsVoid ? string.Empty : "return ")}}baseMethod({{string.Join(", ", methodSymbol.Parameters.Select(p => p.Name))}});
@@ -515,7 +516,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                             }
                                             );
                                     else
-                                        {{(returnsVoid ? string.Empty : "return ")}}{{(isAwaitable ? "await " : string.Empty)}}On{{methodNameSyntax}}(UnderlyingObject.{{methodNameSyntax}}{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => p.Name)))}});
+                                        {{(returnsVoid ? string.Empty : "return ")}}{{(isAwaitable ? "await " : string.Empty)}}{{onMethodName}}(UnderlyingObject.{{methodNameSyntax}}{{string.Join(", ", new[] { string.Empty }.Concat(methodSymbol.Parameters.Select(p => p.Name)))}});
                                 }
                         """);
                     strBuilder.AppendLine($$"""
