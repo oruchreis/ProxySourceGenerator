@@ -1,13 +1,7 @@
-//HintName: TestClassProxy.g.cs
+﻿//HintName: TestClassProxy.g.cs
 using ProxySourceGenerator;
 namespace Test
 {
-    partial interface ITestClass 
-    {
-        public string AProperty { get; set; }
-        public void Method();
-    }
-
     internal static class TestClassProxyInitializer
     {
         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
@@ -17,7 +11,7 @@ namespace Test
         }
     }
     
-    [JsonSerializable][System.Runtime.Serialization.DataContract(Namespace = "asd")]
+    
     partial class TestClassProxy: ITestClass, IGeneratedProxy<ITestClass> 
     {
         /// <inheritdoc/>
@@ -37,7 +31,7 @@ namespace Test
         {
             UnderlyingObject = underlyingObject;
         }
-        #region [System.Runtime.Serialization.DataMember(Order = 0)] [JsonProperty] public string AProperty Property
+        #region string AProperty Property
         protected virtual string On_AProperty_Getter(Func<string> getter)
         {
             return getter();
@@ -46,7 +40,7 @@ namespace Test
         {
             setter(value);
         }
-        [System.Runtime.Serialization.DataMember(Order = 0)] [JsonProperty] public string AProperty
+        string AProperty
         {
             get 
             {
@@ -63,7 +57,7 @@ namespace Test
                     On_AProperty_Setter(v => UnderlyingObject.AProperty = v, value);
             }
         }
-        #endregion //[System.Runtime.Serialization.DataMember(Order = 0)] [JsonProperty] public string AProperty Property
+        #endregion //string AProperty Property
         #region public void Method() Method
         protected virtual void On_Method(Action baseMethod)
             
@@ -84,5 +78,67 @@ namespace Test
                 On_Method(UnderlyingObject.Method);
         }
         #endregion //public void Method() Method
+        #region internal int MethodReturnInt(string str) Method
+        protected virtual int On_MethodReturnInt(Func<string, int> baseMethod, string str)
+            
+        {
+            return baseMethod(str);
+        }
+        internal int MethodReturnInt(string str)
+        {
+            if (InterceptMethod != null)
+                return (int)InterceptMethod(
+                    "MethodReturnInt", 
+                    p => On_MethodReturnInt(UnderlyingObject.MethodReturnInt, (string)p["str"]),
+                    new Dictionary<string, object> {
+                        ["str"] = str
+                    }
+                    );
+            else
+                return On_MethodReturnInt(UnderlyingObject.MethodReturnInt, str);
+        }
+        #endregion //internal int MethodReturnInt(string str) Method
+        #region protected string AProtectedMethod(int param1, long param2, List<int> param3) Method
+        protected virtual string On_AProtectedMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
+            
+        {
+            return baseMethod(param1, param2, param3);
+        }
+        protected string AProtectedMethod(int param1, long param2, List<int> param3)
+        {
+            if (InterceptMethod != null)
+                return (string)InterceptMethod(
+                    "AProtectedMethod", 
+                    p => On_AProtectedMethod(UnderlyingObject.AProtectedMethod, (int)p["param1"], (long)p["param2"], (List<int>)p["param3"]),
+                    new Dictionary<string, object> {
+                        ["param1"] = param1,
+["param2"] = param2,
+["param3"] = param3
+                    }
+                    );
+            else
+                return On_AProtectedMethod(UnderlyingObject.AProtectedMethod, param1, param2, param3);
+        }
+        #endregion //protected string AProtectedMethod(int param1, long param2, List<int> param3) Method
+        #region public void BaseMethod() Method
+        protected virtual void On_BaseMethod(Action baseMethod)
+            
+        {
+            baseMethod();
+        }
+        public void BaseMethod()
+        {
+            if (InterceptMethod != null)
+                InterceptMethod(
+                    "BaseMethod", 
+                    p => {On_BaseMethod(UnderlyingObject.BaseMethod); return null;},
+                    new Dictionary<string, object> {
+                        
+                    }
+                    );
+            else
+                On_BaseMethod(UnderlyingObject.BaseMethod);
+        }
+        #endregion //public void BaseMethod() Method
     }
 }

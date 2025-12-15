@@ -1,10 +1,13 @@
 ﻿//HintName: TestClassProxy{T}.g.cs
 using ProxySourceGenerator;
+using System.Collections.Generic;
+using System;
+using Test;
 namespace Test
 {
     partial interface ITestClass<T> where T: struct
     {
-        public void Method<TMethod>()
+        void Method<TMethod>()
     where TMethod : new();
     }
 
@@ -13,33 +16,30 @@ namespace Test
         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
         public static void RegisterProxy()
         {
-            ProxyAccessor<ITestClass<T>>.Register(underlyingObject => new TestClassProxy<T>(underlyingObject));
+            ProxySourceGenerator.ProxyAccessor<ITestClass<T>>.Register(underlyingObject => new TestClassProxy<T>(underlyingObject));
         }
     }
-    
     
     partial class TestClassProxy<T>: ITestClass<T>, IGeneratedProxy<ITestClass<T>> where T: struct
     {
         /// <inheritdoc/>
-        public InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
+        public ProxySourceGenerator.InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
         /// <inheritdoc/>
-        public InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
+        public ProxySourceGenerator.InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
         /// <inheritdoc/>
-        public InterceptMethodHandler InterceptMethod { get; set; }
-        /// <inheritdoc/>
-        public InterceptAsyncMethodHandler InterceptAsyncMethod { get; set; }
+        public ProxySourceGenerator.InterceptMethodHandler InterceptMethod { get; set; }
         /// <inheritdoc/>
         public ITestClass<T> UnderlyingObject { get; set; }
         /// <inheritdoc/>
         ITestClass<T> IGeneratedProxy<ITestClass<T>>.Access => (ITestClass<T>) this;
-
-        public TestClassProxy<T>(ITestClass<T> underlyingObject): base()
+        public TestClassProxy<T> (ITestClass<T> underlyingObject)
+            :base()
         {
             UnderlyingObject = underlyingObject;
         }
         #region public void Method<TMethod>()
     where TMethod : new() Method
-        protected virtual void On_Method<TMethod>(Action baseMethod)
+        protected virtual void OnMethod<TMethod>(Action baseMethod)
             where TMethod : new()
         {
             baseMethod();
@@ -50,13 +50,13 @@ namespace Test
             if (InterceptMethod != null)
                 InterceptMethod(
                     "Method<TMethod>", 
-                    p => {On_Method<TMethod>(UnderlyingObject.Method<TMethod>); return null;},
+                    p => {OnMethod<TMethod>(UnderlyingObject.Method<TMethod>); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                On_Method<TMethod>(UnderlyingObject.Method<TMethod>);
+                OnMethod<TMethod>(UnderlyingObject.Method<TMethod>);
         }
         #endregion //public void Method<TMethod>()
     where TMethod : new() Method

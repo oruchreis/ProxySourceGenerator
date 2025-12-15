@@ -174,10 +174,14 @@ public class ProxySourceGenerator : IIncrementalGenerator
                                 methodSymbol.Parameters.Select(p => SyntaxFactory.Parameter(SyntaxFactory.Identifier(p.Name)).WithType(SyntaxFactory.ParseTypeName(p.Type.ToDisplayString()))))
                                 )));
 
+                    var modifiers = GetModifiers(member, 
+                        except: [SyntaxKind.NewKeyword, SyntaxKind.AbstractKeyword, 
+                            SyntaxKind.OverrideKeyword, SyntaxKind.VirtualKeyword, SyntaxKind.AsyncKeyword]);
+
                     if (propertyDeclarationSyntax != null)
                     {
                         var newPropertyDeclarationSyntax = propertyDeclarationSyntax
-                            .WithModifiers(new SyntaxTokenList())
+                            .WithModifiers(modifiers)
                             .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                             .WithAccessorList(
                                 SyntaxFactory.AccessorList(propertyDeclarationSyntax.AccessorList != null ?
@@ -207,7 +211,7 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     else if (methodDeclarationSyntax != null)
                     {
                         methodDeclarationSyntax = methodDeclarationSyntax
-                            .WithModifiers(new SyntaxTokenList())
+                            .WithModifiers(modifiers)
                             .WithAttributeLists(SyntaxFactory.List<AttributeListSyntax>())
                             .WithBody(null)
                             .WithExpressionBody(null)
@@ -656,6 +660,63 @@ public class ProxySourceGenerator : IIncrementalGenerator
                 }
 
                 return null;
+            }
+
+            static SyntaxTokenList GetModifiers(ISymbol symbol, HashSet<SyntaxKind>? except = null)
+            {
+                except ??= new HashSet<SyntaxKind>();
+                var tokens = new HashSet<SyntaxToken>();
+
+                // 1) Access modifiers
+                switch (symbol.DeclaredAccessibility)
+                {
+                    case Accessibility.Public:
+                        if (!except.Contains(SyntaxKind.PublicKeyword))
+                            tokens.Add(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+                        break;
+                    case Accessibility.Private:
+                        if (!except.Contains(SyntaxKind.PrivateKeyword))
+                            tokens.Add(SyntaxFactory.Token(SyntaxKind.PrivateKeyword));
+                        break;
+                    case Accessibility.Internal:
+                        if (!except.Contains(SyntaxKind.InternalKeyword))
+                            tokens.Add(SyntaxFactory.Token(SyntaxKind.InternalKeyword));
+                        break;
+                    case Accessibility.Protected:
+                        if (!except.Contains(SyntaxKind.ProtectedKeyword))
+                            tokens.Add(SyntaxFactory.Token(SyntaxKind.ProtectedKeyword));
+                        break;
+                    case Accessibility.ProtectedOrInternal:
+                        if (!except.Contains(SyntaxKind.ProtectedKeyword) && !except.Contains(SyntaxKind.InternalKeyword))
+                            tokens.UnionWith([SyntaxFactory.Token(SyntaxKind.ProtectedKeyword), SyntaxFactory.Token(SyntaxKind.InternalKeyword)]);
+                        break;
+                    case Accessibility.ProtectedAndInternal:
+                        if (!except.Contains(SyntaxKind.PrivateKeyword) && !except.Contains(SyntaxKind.ProtectedKeyword))
+                            tokens.UnionWith([SyntaxFactory.Token(SyntaxKind.PrivateKeyword), SyntaxFactory.Token(SyntaxKind.ProtectedKeyword)]);
+                        break;
+                }
+
+                // 2) Semantic modifiers
+                if (symbol.IsStatic && !except.Contains(SyntaxKind.StaticKeyword))
+                    tokens.Add(SyntaxFactory.Token(SyntaxKind.StaticKeyword));
+
+                if (symbol.IsAbstract && !except.Contains(SyntaxKind.AbstractKeyword))
+                    tokens.Add(SyntaxFactory.Token(SyntaxKind.AbstractKeyword));
+
+                if (symbol.IsSealed && !except.Contains(SyntaxKind.SealedKeyword))
+                    tokens.Add(SyntaxFactory.Token(SyntaxKind.SealedKeyword));
+
+                if (symbol.IsVirtual && !except.Contains(SyntaxKind.VirtualKeyword))
+                    tokens.Add(SyntaxFactory.Token(SyntaxKind.VirtualKeyword));
+
+                if (symbol.IsOverride && !except.Contains(SyntaxKind.OverrideKeyword))
+                    tokens.Add(SyntaxFactory.Token(SyntaxKind.OverrideKeyword));
+
+                // 3) Async (sadece methodlar için geçerli)
+                if (symbol is IMethodSymbol m && m.IsAsync && !except.Contains(SyntaxKind.AsyncKeyword))
+                    tokens.Add(SyntaxFactory.Token(SyntaxKind.AsyncKeyword));
+
+                return SyntaxFactory.TokenList(tokens);
             }
         }
     }

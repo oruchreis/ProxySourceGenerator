@@ -2,11 +2,6 @@
 using ProxySourceGenerator;
 namespace Test
 {
-    partial interface ITestClassBase 
-    {
-        protected string ABaseMethod(int param1, long param2, List<int> param3);
-    }
-
     internal static class TestClassBaseProxyInitializer
     {
         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
@@ -36,27 +31,25 @@ namespace Test
         {
             UnderlyingObject = underlyingObject;
         }
-        #region protected string ABaseMethod(int param1, long param2, List<int> param3) Method
-        protected virtual string On_ABaseMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
+        #region public void BaseMethod() Method
+        protected virtual void On_BaseMethod(Action baseMethod)
             
         {
-            return baseMethod(param1, param2, param3);
+            baseMethod();
         }
-        protected string ABaseMethod(int param1, long param2, List<int> param3)
+        public void BaseMethod()
         {
             if (InterceptMethod != null)
-                return (string)InterceptMethod(
-                    "ABaseMethod", 
-                    p => On_ABaseMethod(UnderlyingObject.ABaseMethod, (int)p["param1"], (long)p["param2"], (List<int>)p["param3"]),
+                InterceptMethod(
+                    "BaseMethod", 
+                    p => {On_BaseMethod(UnderlyingObject.BaseMethod); return null;},
                     new Dictionary<string, object> {
-                        ["param1"] = param1,
-["param2"] = param2,
-["param3"] = param3
+                        
                     }
                     );
             else
-                return On_ABaseMethod(UnderlyingObject.ABaseMethod, param1, param2, param3);
+                On_BaseMethod(UnderlyingObject.BaseMethod);
         }
-        #endregion //protected string ABaseMethod(int param1, long param2, List<int> param3) Method
+        #endregion //public void BaseMethod() Method
     }
 }

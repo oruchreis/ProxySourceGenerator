@@ -5,9 +5,9 @@ namespace Test
 {
     partial interface ITestClass 
     {
-        Task<bool> Method1Async(string param1, int param2);
-        Task<int> Method2Async(string param1, int param2);
-        Task Method3Async();
+        public Task<bool> Method1Async(string param1, int param2);
+        public Task<int> Method2Async(string param1, int param2);
+        public Task Method3Async();
     }
 
     internal static class TestClassProxyInitializer
@@ -40,7 +40,7 @@ namespace Test
             UnderlyingObject = underlyingObject;
         }
         #region public async Task<bool> Method1Async(string param1, int param2) Method
-        protected virtual System.Threading.Tasks.Task<bool> OnMethod1Async(Func<string, int, System.Threading.Tasks.Task<bool>> baseMethod, string param1, int param2)
+        protected virtual System.Threading.Tasks.Task<bool> On_Method1Async(Func<string, int, System.Threading.Tasks.Task<bool>> baseMethod, string param1, int param2)
             
         {
             return baseMethod(param1, param2);
@@ -48,20 +48,20 @@ namespace Test
         public async Task<bool> Method1Async(string param1, int param2)
         {
             if (InterceptAsyncMethod != null)
-                return await ((System.Threading.Tasks.Task<bool>)InterceptAsyncMethod(
+                return (bool)await InterceptAsyncMethod(
                     "Method1Async", 
-                    p => OnMethod1Async(UnderlyingObject.Method1Async, (string)p["param1"], (int)p["param2"]),
+                    async p => await On_Method1Async(UnderlyingObject.Method1Async, (string)p["param1"], (int)p["param2"]),
                     new Dictionary<string, object> {
                         ["param1"] = param1,
 ["param2"] = param2
                     }
-                    ));
+                    );
             else
-                return OnMethod1Async(UnderlyingObject.Method1Async, param1, param2);
+                return await On_Method1Async(UnderlyingObject.Method1Async, param1, param2);
         }
         #endregion //public async Task<bool> Method1Async(string param1, int param2) Method
         #region public async Task<int> Method2Async(string param1, int param2) Method
-        protected virtual System.Threading.Tasks.Task<int> OnMethod2Async(Func<string, int, System.Threading.Tasks.Task<int>> baseMethod, string param1, int param2)
+        protected virtual System.Threading.Tasks.Task<int> On_Method2Async(Func<string, int, System.Threading.Tasks.Task<int>> baseMethod, string param1, int param2)
             
         {
             return baseMethod(param1, param2);
@@ -69,20 +69,20 @@ namespace Test
         public async Task<int> Method2Async(string param1, int param2)
         {
             if (InterceptAsyncMethod != null)
-                return await ((System.Threading.Tasks.Task<int>)InterceptAsyncMethod(
+                return (int)await InterceptAsyncMethod(
                     "Method2Async", 
-                    p => OnMethod2Async(UnderlyingObject.Method2Async, (string)p["param1"], (int)p["param2"]),
+                    async p => await On_Method2Async(UnderlyingObject.Method2Async, (string)p["param1"], (int)p["param2"]),
                     new Dictionary<string, object> {
                         ["param1"] = param1,
 ["param2"] = param2
                     }
-                    ));
+                    );
             else
-                return OnMethod2Async(UnderlyingObject.Method2Async, param1, param2);
+                return await On_Method2Async(UnderlyingObject.Method2Async, param1, param2);
         }
         #endregion //public async Task<int> Method2Async(string param1, int param2) Method
         #region public async Task Method3Async() Method
-        protected virtual System.Threading.Tasks.Task OnMethod3Async(Func<System.Threading.Tasks.Task> baseMethod)
+        protected virtual System.Threading.Tasks.Task On_Method3Async(Func<System.Threading.Tasks.Task> baseMethod)
             
         {
             return baseMethod();
@@ -90,15 +90,15 @@ namespace Test
         public async Task Method3Async()
         {
             if (InterceptAsyncMethod != null)
-                return await ((System.Threading.Tasks.Task)InterceptAsyncMethod(
+                await InterceptAsyncMethod(
                     "Method3Async", 
-                    p => OnMethod3Async(UnderlyingObject.Method3Async),
+                    async p => {await On_Method3Async(UnderlyingObject.Method3Async); return null;},
                     new Dictionary<string, object> {
                         
                     }
-                    ));
+                    );
             else
-                return OnMethod3Async(UnderlyingObject.Method3Async);
+                await On_Method3Async(UnderlyingObject.Method3Async);
         }
         #endregion //public async Task Method3Async() Method
     }
