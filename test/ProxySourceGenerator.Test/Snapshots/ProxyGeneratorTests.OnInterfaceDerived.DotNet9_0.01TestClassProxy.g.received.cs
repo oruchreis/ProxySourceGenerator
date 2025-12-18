@@ -78,48 +78,6 @@ namespace Test
                 On_Method(UnderlyingObject.Method);
         }
         #endregion //public void Method() Method
-        #region internal int MethodReturnInt(string str) Method
-        protected virtual int On_MethodReturnInt(Func<string, int> baseMethod, string str)
-            
-        {
-            return baseMethod(str);
-        }
-        internal int MethodReturnInt(string str)
-        {
-            if (InterceptMethod != null)
-                return (int)InterceptMethod(
-                    "MethodReturnInt", 
-                    p => On_MethodReturnInt(UnderlyingObject.MethodReturnInt, (string)p["str"]),
-                    new Dictionary<string, object> {
-                        ["str"] = str
-                    }
-                    );
-            else
-                return On_MethodReturnInt(UnderlyingObject.MethodReturnInt, str);
-        }
-        #endregion //internal int MethodReturnInt(string str) Method
-        #region protected string AProtectedMethod(int param1, long param2, List<int> param3) Method
-        protected virtual string On_AProtectedMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
-            
-        {
-            return baseMethod(param1, param2, param3);
-        }
-        protected string AProtectedMethod(int param1, long param2, List<int> param3)
-        {
-            if (InterceptMethod != null)
-                return (string)InterceptMethod(
-                    "AProtectedMethod", 
-                    p => On_AProtectedMethod(UnderlyingObject.AProtectedMethod, (int)p["param1"], (long)p["param2"], (List<int>)p["param3"]),
-                    new Dictionary<string, object> {
-                        ["param1"] = param1,
-["param2"] = param2,
-["param3"] = param3
-                    }
-                    );
-            else
-                return On_AProtectedMethod(UnderlyingObject.AProtectedMethod, param1, param2, param3);
-        }
-        #endregion //protected string AProtectedMethod(int param1, long param2, List<int> param3) Method
         #region public void BaseMethod() Method
         protected virtual void On_BaseMethod(Action baseMethod)
             

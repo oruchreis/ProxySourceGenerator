@@ -316,4 +316,44 @@ public class ProxyGeneratorTests : VerifyBase
             }
             """);
     }
+
+    [TestMethod]
+    public void BaseClassWithCtorParameters()
+    {
+        VerifyProxy("""            
+            using ProxySourceGenerator;
+            namespace Test;
+            [GenerateProxy(GenerateForDerived=true, UseInterface=false)]
+            public class BaseClassWithUseInterfaceFalse
+            {
+                public BaseClass(string param1, int param2)
+                {
+                }
+            }   
+            
+            public class TestClass1: BaseClassWithUseInterfaceFalse
+            {
+                public TestClass1(string param1, int param2)
+                    : base(param1, param2)
+                {
+                }
+            }
+
+            [GenerateProxy(GenerateForDerived=true, UseInterface=true)]
+            public class BaseClassWithUseInterfaceTrue
+            {
+                public BaseClassWithUseInterfaceTrue(string param1, int param2)
+                {
+                }
+            }
+            public class TestClass2: BaseClassWithUseInterfaceTrue
+            {
+                public TestClass2(string param1, int param2)
+                    : base(param1, param2)
+                {
+                }
+            }            
+            """);
+
+    }
 }

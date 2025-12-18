@@ -1,5 +1,7 @@
 ﻿//HintName: TestClassProxy.g.cs
 using ProxySourceGenerator;
+using System.Collections.Generic;
+using System;
 namespace Test
 {
     internal static class TestClassProxyInitializer
@@ -7,36 +9,28 @@ namespace Test
         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
         public static void RegisterProxy()
         {
-            ProxyAccessor<ITestClass>.Register(underlyingObject => new TestClassProxy(underlyingObject));
+            ProxySourceGenerator.ProxyAccessor<ITestClass>.Register(underlyingObject => new TestClassProxy(underlyingObject));
         }
     }
-    
     
     partial class TestClassProxy: ITestClass, IGeneratedProxy<ITestClass> 
     {
         /// <inheritdoc/>
-        public InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
+        public ProxySourceGenerator.InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
         /// <inheritdoc/>
-        public InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
+        public ProxySourceGenerator.InterceptPropertySetterHandler InterceptPropertySetter { get; set; }
         /// <inheritdoc/>
-        public InterceptMethodHandler InterceptMethod { get; set; }
-        /// <inheritdoc/>
-        public InterceptAsyncMethodHandler InterceptAsyncMethod { get; set; }
+        public ProxySourceGenerator.InterceptMethodHandler InterceptMethod { get; set; }
         /// <inheritdoc/>
         public ITestClass UnderlyingObject { get; set; }
         /// <inheritdoc/>
         ITestClass IGeneratedProxy<ITestClass>.Access => (ITestClass) this;
-
-        public TestClassProxy(ITestClass underlyingObject): base()
-        {
-            UnderlyingObject = underlyingObject;
-        }
         #region string AProperty Property
-        protected virtual string On_AProperty_Getter(Func<string> getter)
+        protected virtual string OnGetAProperty(Func<string> getter)
         {
             return getter();
         }
-        protected virtual void On_AProperty_Setter(Action<string> setter, string value)
+        protected virtual void OnSetAProperty(Action<string> setter, string value)
         {
             setter(value);
         }
@@ -45,21 +39,21 @@ namespace Test
             get 
             {
                 if (InterceptPropertyGetter != null)
-                    return (string)InterceptPropertyGetter("AProperty", () => On_AProperty_Getter(() => UnderlyingObject.AProperty));
+                    return (string)InterceptPropertyGetter("AProperty", () => OnGetAProperty(() => UnderlyingObject.AProperty));
                 else
-                    return On_AProperty_Getter(() => UnderlyingObject.AProperty);
+                    return OnGetAProperty(() => UnderlyingObject.AProperty);
             }
             set
             {
                 if (InterceptPropertySetter != null)
-                    InterceptPropertySetter("AProperty", value => On_AProperty_Setter(v => UnderlyingObject.AProperty = v, (string)value), value);
+                    InterceptPropertySetter("AProperty", value => OnSetAProperty(v => UnderlyingObject.AProperty = v, (string)value), value);
                 else
-                    On_AProperty_Setter(v => UnderlyingObject.AProperty = v, value);
+                    OnSetAProperty(v => UnderlyingObject.AProperty = v, value);
             }
         }
         #endregion //string AProperty Property
         #region public void Method() Method
-        protected virtual void On_Method(Action baseMethod)
+        protected virtual void OnMethod(Action baseMethod)
             
         {
             baseMethod();
@@ -69,17 +63,17 @@ namespace Test
             if (InterceptMethod != null)
                 InterceptMethod(
                     "Method", 
-                    p => {On_Method(UnderlyingObject.Method); return null;},
+                    p => {OnMethod(UnderlyingObject.Method); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                On_Method(UnderlyingObject.Method);
+                OnMethod(UnderlyingObject.Method);
         }
         #endregion //public void Method() Method
         #region internal int MethodReturnInt(string str) Method
-        protected virtual int On_MethodReturnInt(Func<string, int> baseMethod, string str)
+        protected virtual int OnMethodReturnInt(Func<string, int> baseMethod, string str)
             
         {
             return baseMethod(str);
@@ -89,17 +83,17 @@ namespace Test
             if (InterceptMethod != null)
                 return (int)InterceptMethod(
                     "MethodReturnInt", 
-                    p => On_MethodReturnInt(UnderlyingObject.MethodReturnInt, (string)p["str"]),
+                    p => OnMethodReturnInt(UnderlyingObject.MethodReturnInt, (string)p["str"]),
                     new Dictionary<string, object> {
                         ["str"] = str
                     }
                     );
             else
-                return On_MethodReturnInt(UnderlyingObject.MethodReturnInt, str);
+                return OnMethodReturnInt(UnderlyingObject.MethodReturnInt, str);
         }
         #endregion //internal int MethodReturnInt(string str) Method
         #region protected string AProtectedMethod(int param1, long param2, List<int> param3) Method
-        protected virtual string On_AProtectedMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
+        protected virtual string OnAProtectedMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
             
         {
             return baseMethod(param1, param2, param3);
@@ -109,7 +103,7 @@ namespace Test
             if (InterceptMethod != null)
                 return (string)InterceptMethod(
                     "AProtectedMethod", 
-                    p => On_AProtectedMethod(UnderlyingObject.AProtectedMethod, (int)p["param1"], (long)p["param2"], (List<int>)p["param3"]),
+                    p => OnAProtectedMethod(UnderlyingObject.AProtectedMethod, (int)p["param1"], (long)p["param2"], (List<int>)p["param3"]),
                     new Dictionary<string, object> {
                         ["param1"] = param1,
 ["param2"] = param2,
@@ -117,7 +111,7 @@ namespace Test
                     }
                     );
             else
-                return On_AProtectedMethod(UnderlyingObject.AProtectedMethod, param1, param2, param3);
+                return OnAProtectedMethod(UnderlyingObject.AProtectedMethod, param1, param2, param3);
         }
         #endregion //protected string AProtectedMethod(int param1, long param2, List<int> param3) Method
     }

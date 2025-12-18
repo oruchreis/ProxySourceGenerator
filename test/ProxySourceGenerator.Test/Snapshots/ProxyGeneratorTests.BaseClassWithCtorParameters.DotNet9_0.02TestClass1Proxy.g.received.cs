@@ -1,22 +1,18 @@
-﻿//HintName: TestClassBaseProxy.g.cs
+﻿//HintName: TestClass1Proxy.g.cs
 using ProxySourceGenerator;
 namespace Test
 {
-    partial interface ITestClassBase 
-    {
-    }
-
-    internal static class TestClassBaseProxyInitializer
+    internal static class TestClass1ProxyInitializer
     {
         [System.Runtime.CompilerServices.ModuleInitializerAttribute]
         public static void RegisterProxy()
         {
-            ProxyAccessor<ITestClassBase>.Register(underlyingObject => new TestClassBaseProxy(underlyingObject));
+            ProxyAccessor<TestClass1>.Register(underlyingObject => new TestClass1Proxy(underlyingObject));
         }
     }
     
     
-    partial class TestClassBaseProxy: ITestClassBase, IGeneratedProxy<ITestClassBase> 
+    partial class TestClass1Proxy: TestClass1, IGeneratedProxy<TestClass1> 
     {
         /// <inheritdoc/>
         public InterceptPropertyGetterHandler InterceptPropertyGetter { get; set; }
@@ -27,11 +23,16 @@ namespace Test
         /// <inheritdoc/>
         public InterceptAsyncMethodHandler InterceptAsyncMethod { get; set; }
         /// <inheritdoc/>
-        public ITestClassBase UnderlyingObject { get; set; }
+        public TestClass1 UnderlyingObject { get; set; }
         /// <inheritdoc/>
-        ITestClassBase IGeneratedProxy<ITestClassBase>.Access => (ITestClassBase) this;
+        TestClass1 IGeneratedProxy<TestClass1>.Access => (TestClass1) this;
 
-        public TestClassBaseProxy(ITestClassBase underlyingObject): base()
+        public TestClass1Proxy(TestClass1 underlyingObject): base()
+        {
+            UnderlyingObject = underlyingObject;
+        }
+        public TestClass1Proxy (TestClass1 underlyingObject, string param1, int param2)
+            :base(param1, param2)
         {
             UnderlyingObject = underlyingObject;
         }

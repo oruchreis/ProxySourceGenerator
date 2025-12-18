@@ -1,7 +1,5 @@
 ﻿//HintName: TestClassBaseProxy.g.cs
 using ProxySourceGenerator;
-using System.Collections.Generic;
-using System;
 namespace Test
 {
     internal static class TestClassBaseProxyInitializer
@@ -23,6 +21,8 @@ namespace Test
         /// <inheritdoc/>
         public InterceptMethodHandler InterceptMethod { get; set; }
         /// <inheritdoc/>
+        public InterceptAsyncMethodHandler InterceptAsyncMethod { get; set; }
+        /// <inheritdoc/>
         public ITestClassBase UnderlyingObject { get; set; }
         /// <inheritdoc/>
         ITestClassBase IGeneratedProxy<ITestClassBase>.Access => (ITestClassBase) this;
@@ -32,7 +32,7 @@ namespace Test
             UnderlyingObject = underlyingObject;
         }
         #region public void BaseMethod() Method
-        protected virtual void OnBaseMethod(Action baseMethod)
+        protected virtual void On_BaseMethod(Action baseMethod)
             
         {
             baseMethod();
@@ -42,13 +42,13 @@ namespace Test
             if (InterceptMethod != null)
                 InterceptMethod(
                     "BaseMethod", 
-                    p => {OnBaseMethod(UnderlyingObject.BaseMethod); return null;},
+                    p => {On_BaseMethod(UnderlyingObject.BaseMethod); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                OnBaseMethod(UnderlyingObject.BaseMethod);
+                On_BaseMethod(UnderlyingObject.BaseMethod);
         }
         #endregion //public void BaseMethod() Method
     }

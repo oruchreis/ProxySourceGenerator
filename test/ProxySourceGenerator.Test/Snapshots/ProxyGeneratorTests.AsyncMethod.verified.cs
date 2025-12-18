@@ -5,9 +5,9 @@ namespace Test
 {
     partial interface ITestClass 
     {
-        public Task<bool> Method1Async(string param1, int param2);
-        public Task<int> Method2Async(string param1, int param2);
-        public Task Method3Async();
+        Task<bool> Method1Async(string param1, int param2);
+        Task<int> Method2Async(string param1, int param2);
+        Task Method3Async();
     }
 
     internal static class TestClassProxyInitializer

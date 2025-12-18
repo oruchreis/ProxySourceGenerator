@@ -272,27 +272,30 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         }
                 """);
 
-            foreach (var ctor in typeSymbol.InstanceConstructors.Where(ctor =>
-                !ctor.Parameters.IsEmpty &&
-                ((!useInterface && ctor.DeclaredAccessibility != Accessibility.Private) || (useInterface && ctor.DeclaredAccessibility == Accessibility.Public))))
+            if (!useInterface)
             {
-                var accessibilityKeyword = ctor.DeclaredAccessibility switch
+                foreach (var ctor in typeSymbol.InstanceConstructors.Where(ctor =>
+                    !ctor.Parameters.IsEmpty &&
+                    ((!useInterface && ctor.DeclaredAccessibility != Accessibility.Private) || (useInterface && ctor.DeclaredAccessibility == Accessibility.Public))))
                 {
-                    Accessibility.Internal when !ctor.IsImplicitlyDeclared => "internal",
-                    Accessibility.Protected when !ctor.IsImplicitlyDeclared => "protected",
-                    Accessibility.ProtectedOrInternal when !ctor.IsImplicitlyDeclared => "protected internal",
-                    Accessibility.ProtectedAndInternal when !ctor.IsImplicitlyDeclared => "private protected",
-                    _ => "public"
+                    var accessibilityKeyword = ctor.DeclaredAccessibility switch
+                    {
+                        Accessibility.Internal when !ctor.IsImplicitlyDeclared => "internal",
+                        Accessibility.Protected when !ctor.IsImplicitlyDeclared => "protected",
+                        Accessibility.ProtectedOrInternal when !ctor.IsImplicitlyDeclared => "protected internal",
+                        Accessibility.ProtectedAndInternal when !ctor.IsImplicitlyDeclared => "private protected",
+                        _ => "public"
 
-                };
-                strBuilder.AppendLine($$"""
+                    };
+                    strBuilder.AppendLine($$"""
                             {{accessibilityKeyword}} {{proxyClassName}} ({{string.Join(", ", new[] { $"{baseTypeName} underlyingObject" }.Concat(ctor.Parameters.Select(p => p.ToDisplayString())))}})
                                 :base({{string.Join(", ", ctor.Parameters.Select(p => p.Name))}})
                             {
                                 UnderlyingObject = underlyingObject;
                             }
                     """);
-            }
+                }
+            }            
 
             distinctMembers = [];
             foreach (var member in RecursiveFindMembers(typeSymbol).Where(m => !m.IsStatic && (useInterface || m.IsVirtual || m.IsAbstract) &&

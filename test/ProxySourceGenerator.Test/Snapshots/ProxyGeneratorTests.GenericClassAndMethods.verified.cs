@@ -4,7 +4,7 @@ namespace Test
 {
     partial interface ITestClass<T> where T: struct
     {
-        public void Method<TMethod>()
+        void Method<TMethod>()
     where TMethod : new();
     }
 

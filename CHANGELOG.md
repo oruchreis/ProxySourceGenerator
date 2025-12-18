@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.16] - 2025-12-18
+### Fixed
+- Removed base ctor call for interface interception.
+
 ## [1.0.15] - 2025-12-15
 ### Fixed
 - Protected method interception for not using interface way.

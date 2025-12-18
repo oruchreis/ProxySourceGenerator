@@ -4,10 +4,9 @@ namespace Test
 {
     partial interface ITestClass 
     {
-        public string AProperty { get; set; }
-        public void Method();
-        public int MethodReturnInt(string str);
-        protected string ABaseMethod(int param1, long param2, List<int> param3);
+        string AProperty { get; set; }
+        void Method();
+        int MethodReturnInt(string str);
     }
 
     internal static class TestClassProxyInitializer
@@ -106,27 +105,5 @@ namespace Test
                 return On_MethodReturnInt(UnderlyingObject.MethodReturnInt, str);
         }
         #endregion //public int MethodReturnInt(string str) Method
-        #region protected string ABaseMethod(int param1, long param2, List<int> param3) Method
-        protected virtual string On_ABaseMethod(Func<int, long, List<int>, string> baseMethod, int param1, long param2, List<int> param3)
-            
-        {
-            return baseMethod(param1, param2, param3);
-        }
-        protected string ABaseMethod(int param1, long param2, List<int> param3)
-        {
-            if (InterceptMethod != null)
-                return (string)InterceptMethod(
-                    "ABaseMethod", 
-                    p => On_ABaseMethod(UnderlyingObject.ABaseMethod, (int)p["param1"], (long)p["param2"], (List<int>)p["param3"]),
-                    new Dictionary<string, object> {
-                        ["param1"] = param1,
-["param2"] = param2,
-["param3"] = param3
-                    }
-                    );
-            else
-                return On_ABaseMethod(UnderlyingObject.ABaseMethod, param1, param2, param3);
-        }
-        #endregion //protected string ABaseMethod(int param1, long param2, List<int> param3) Method
     }
 }

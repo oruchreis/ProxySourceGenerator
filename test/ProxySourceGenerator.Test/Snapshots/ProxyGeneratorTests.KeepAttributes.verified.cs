@@ -4,8 +4,8 @@ namespace Test
 {
     partial interface ITestClass 
     {
-        public string AProperty { get; set; }
-        public void Method();
+        string AProperty { get; set; }
+        void Method();
     }
 
     internal static class TestClassProxyInitializer
