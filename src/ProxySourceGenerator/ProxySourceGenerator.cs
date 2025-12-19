@@ -491,10 +491,11 @@ public class ProxySourceGenerator : IIncrementalGenerator
                     var taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
                     var valueTaskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
 
+                    var resultType = isAwaitable ? GetAsyncResultType(methodSymbol.ReturnType, compilation)! : methodSymbol.ReturnType;
                     var returnsVoid = methodSymbol.ReturnsVoid ||
                         SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, taskType) ||
-                        SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, valueTaskType);
-                    var resultType = isAwaitable ? GetAsyncResultType(methodSymbol.ReturnType, compilation)! : methodSymbol.ReturnType;
+                        SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, valueTaskType) || 
+                        resultType == null;
 
                     // if the method is void, Task, or ValueTask, we need to return null after calling the underlying method
                     var callUnderlyingObjectMethod = returnsVoid ?

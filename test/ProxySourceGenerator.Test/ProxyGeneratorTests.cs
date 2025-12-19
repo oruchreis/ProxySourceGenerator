@@ -7,7 +7,7 @@ namespace ProxySourceGenerator.Test;
 [TestClass]
 public class ProxyGeneratorTests : VerifyBase
 {
-    private Task VerifyProxy(params string[] sources)
+    private Task VerifyProxyAsync(params string[] sources)
     {
         // Parse the provided string into a C# syntax tree
         var syntaxTrees = sources.Select(source => CSharpSyntaxTree.ParseText(source)).ToArray();
@@ -43,10 +43,11 @@ public class ProxyGeneratorTests : VerifyBase
 
 
     [TestMethod]
-    public void PublicNotDerived()
+    public async Task PublicNotDerived()
     {
-        VerifyProxy("""
-            using ProxySourceGenerator;
+        await VerifyProxyAsync("""
+            using ProxySourceGenerator;            
+            using System.Threading.Tasks;
 
             namespace Test;
             [GenerateProxyAttribute]
@@ -71,7 +72,7 @@ public class ProxyGeneratorTests : VerifyBase
                 public string APropertyOnlySetter { set; }
                 public string APropertyWithDefaultValue { get; set; } = "Default";
                 public string APropertyOnlyPrivateSetter { get; private set; }
-                public void Method()
+                public async Task Method()
                 {
                 }
 
@@ -84,10 +85,11 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
-    public void Derived()
+    public async Task Derived()
     {
-        VerifyProxy("""
-            using ProxySourceGenerator;
+        await VerifyProxyAsync("""
+            using ProxySourceGenerator;            
+            using System.Threading.Tasks;
 
             namespace Test;
             [GenerateProxy(GenerateForDerived=true)]
@@ -104,7 +106,7 @@ public class ProxyGeneratorTests : VerifyBase
             public class TestClass: TestClassBase
             {
                 public string AProperty {get;set;}
-                public void Method()
+                public async Task Method()
                 {
                 }
             
@@ -126,17 +128,18 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
-    public void GenericClassAndMethods()
+    public async Task GenericClassAndMethods()
     {
-        VerifyProxy("""
+        await VerifyProxyAsync("""
             using ProxySourceGenerator;
+            using System.Threading.Tasks;
 
             namespace Test;
             [GenerateProxyAttribute]
             public class TestClass<T>
                 where T: struct
             {
-                public void Method<TMethod>()
+                public async Task Method<TMethod>()
                     where TMethod: new()
                 {
                 }
@@ -145,10 +148,11 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
-    public void DontUseInterface()
+    public async Task DontUseInterface()
     {
-        VerifyProxy("""
+        await VerifyProxyAsync("""
             using ProxySourceGenerator;
+            using System.Threading.Tasks;
 
             namespace Test;
             [GenerateProxy(GenerateForDerived=true, UseInterface=false)]
@@ -183,23 +187,24 @@ public class ProxyGeneratorTests : VerifyBase
                     return "";
                 }
 
-                public void NotProxiedMethod(){}
+                public async Task NotProxiedMethod(){}
             }
             """);
     }
 
     [TestMethod]
-    public void OnInterface()
+    public async Task OnInterface()
     {
-        VerifyProxy("""
+        await VerifyProxyAsync("""
             using ProxySourceGenerator;
+            using System.Threading.Tasks;
 
             namespace Test;
             [GenerateProxy]
             public interface ITestClass
             {
                 string AProperty {get;set;}
-                public void Method();
+                public async Task Method();
                 internal int MethodReturnInt(string str);
                 protected string AProtectedMethod(
                     int param1, 
@@ -211,7 +216,7 @@ public class ProxyGeneratorTests : VerifyBase
             public class TestClass: TestClassBase
             {
                 public string AProperty {get;set;}
-                public void Method()
+                public async Task Method()
                 {
                 }
             
@@ -229,28 +234,29 @@ public class ProxyGeneratorTests : VerifyBase
                     return "";
                 }
 
-                public void NotProxiedMethod(){}
+                public async Task NotProxiedMethod(){}
             }
             """);
     }
 
     [TestMethod]
-    public void OnInterfaceDerived()
+    public async Task OnInterfaceDerived()
     {
-        VerifyProxy("""
+        await VerifyProxyAsync("""
             using ProxySourceGenerator;
+            using System.Threading.Tasks;
 
             namespace Test;
             [GenerateProxy(GenerateForDerived=true)]
             public interface ITestClassBase
             {
-                public void BaseMethod();
+                public async Task BaseMethod();
             }
 
             public interface ITestClass: ITestClassBase
             {
                 string AProperty {get;set;}
-                public void Method();
+                public async Task Method();
                 internal int MethodReturnInt(string str);
                 protected string AProtectedMethod(
                     int param1, 
@@ -264,10 +270,11 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
-    public void KeepAttributes()
+    public async Task KeepAttributes()
     {
-        VerifyProxy("""
+        await VerifyProxyAsync("""
             using ProxySourceGenerator;
+            using System.Threading.Tasks;
 
             namespace Test;
             [GenerateProxyAttribute]
@@ -281,7 +288,7 @@ public class ProxyGeneratorTests : VerifyBase
 
                 [System.Runtime.Serialization.IgnoreDataMember]
                 [JsonIgnore]
-                public void Method()
+                public async Task Method()
                 {
                 }
             }
@@ -289,9 +296,9 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
-    public void AsyncMethod()
+    public async Task AsyncMethod()
     {
-        VerifyProxy("""
+        await VerifyProxyAsync("""
             using ProxySourceGenerator;
             using System.Threading.Tasks;
 
@@ -318,10 +325,11 @@ public class ProxyGeneratorTests : VerifyBase
     }
 
     [TestMethod]
-    public void BaseClassWithCtorParameters()
+    public async Task BaseClassWithCtorParameters()
     {
-        VerifyProxy("""            
+        await VerifyProxyAsync("""            
             using ProxySourceGenerator;
+
             namespace Test;
             [GenerateProxy(GenerateForDerived=true, UseInterface=false)]
             public class BaseClassWithUseInterfaceFalse
@@ -353,6 +361,68 @@ public class ProxyGeneratorTests : VerifyBase
                 {
                 }
             }            
+            """);
+
+    }
+
+    [TestMethod]
+    public async Task VirtualOverrideMethods()
+    {
+        await VerifyProxyAsync("""            
+            using ProxySourceGenerator;
+            using System.Threading.Tasks;
+
+            namespace Test;
+            [GenerateProxy(GenerateForDerived=true)]
+            public abstract class ModuleBase : IModule
+            {
+                protected ModuleBase(IModuleContext context)
+                {
+                    Context = context;
+                }
+
+                public IModuleContext Context { get; }
+                public int Prop1 => GetProp1();
+
+                public string Prop2 => "";
+
+                protected virtual int GetProp1()
+                {
+                    return 1;
+                }
+
+                public virtual Task MethodAsync()
+                {
+                    return Task.CompletedTask;
+                }
+            }
+            
+            public interface IModule
+            {
+                int Prop1 { get; }
+
+                IModuleContext Context { get; }
+
+                string Prop2 { get; }
+
+                Task MethodAsync();
+            }
+
+            public interface IModuleContext
+            {
+            }
+
+            public class Module1 : ModuleBase, IModule1
+            {
+                public Module1(IModuleContext context) : base(context)
+                {
+                }
+
+                public override async Task MethodAsync()
+                {
+                    await Task.Delay(1);
+                }
+            }
             """);
 
     }

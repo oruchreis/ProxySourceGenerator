@@ -1,5 +1,6 @@
 ﻿//HintName: TestClassProxy.g.cs
 using ProxySourceGenerator;
+using System.Threading.Tasks;
 namespace Test
 {
     partial interface ITestClass 
@@ -12,7 +13,7 @@ namespace Test
         string APropertyOnlySetter { set; }
         string APropertyWithDefaultValue { get; set; }
         string APropertyOnlyPrivateSetter { get; }
-        void Method();
+        Task Method();
         int MethodReturnInt(string str);
     }
 
@@ -217,26 +218,26 @@ namespace Test
             }
         }
         #endregion //public string APropertyOnlyPrivateSetter Property
-        #region public void Method() Method
-        protected virtual void On_Method(Action baseMethod)
+        #region public async Task Method() Method
+        protected virtual System.Threading.Tasks.Task On_Method(Func<System.Threading.Tasks.Task> baseMethod)
             
         {
-            baseMethod();
+            return baseMethod();
         }
-        public void Method()
+        public async Task Method()
         {
-            if (InterceptMethod != null)
-                InterceptMethod(
+            if (InterceptAsyncMethod != null)
+                await InterceptAsyncMethod(
                     "Method", 
-                    p => {On_Method(UnderlyingObject.Method); return null;},
+                    async p => {await On_Method(UnderlyingObject.Method); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                On_Method(UnderlyingObject.Method);
+                await On_Method(UnderlyingObject.Method);
         }
-        #endregion //public void Method() Method
+        #endregion //public async Task Method() Method
         #region public int MethodReturnInt(string str) Method
         protected virtual int On_MethodReturnInt(Func<string, int> baseMethod, string str)
             

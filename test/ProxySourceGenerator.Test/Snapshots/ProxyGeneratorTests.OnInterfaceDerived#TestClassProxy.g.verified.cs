@@ -1,5 +1,6 @@
 ﻿//HintName: TestClassProxy.g.cs
 using ProxySourceGenerator;
+using System.Threading.Tasks;
 namespace Test
 {
     internal static class TestClassProxyInitializer
@@ -58,45 +59,45 @@ namespace Test
             }
         }
         #endregion //string AProperty Property
-        #region public void Method() Method
-        protected virtual void On_Method(Action baseMethod)
+        #region public async Task Method() Method
+        protected virtual System.Threading.Tasks.Task On_Method(Func<System.Threading.Tasks.Task> baseMethod)
             
         {
-            baseMethod();
+            return baseMethod();
         }
-        public void Method()
+        public async Task Method()
         {
-            if (InterceptMethod != null)
-                InterceptMethod(
+            if (InterceptAsyncMethod != null)
+                await InterceptAsyncMethod(
                     "Method", 
-                    p => {On_Method(UnderlyingObject.Method); return null;},
+                    async p => {await On_Method(UnderlyingObject.Method); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                On_Method(UnderlyingObject.Method);
+                await On_Method(UnderlyingObject.Method);
         }
-        #endregion //public void Method() Method
-        #region public void BaseMethod() Method
-        protected virtual void On_BaseMethod(Action baseMethod)
+        #endregion //public async Task Method() Method
+        #region public async Task BaseMethod() Method
+        protected virtual System.Threading.Tasks.Task On_BaseMethod(Func<System.Threading.Tasks.Task> baseMethod)
             
         {
-            baseMethod();
+            return baseMethod();
         }
-        public void BaseMethod()
+        public async Task BaseMethod()
         {
-            if (InterceptMethod != null)
-                InterceptMethod(
+            if (InterceptAsyncMethod != null)
+                await InterceptAsyncMethod(
                     "BaseMethod", 
-                    p => {On_BaseMethod(UnderlyingObject.BaseMethod); return null;},
+                    async p => {await On_BaseMethod(UnderlyingObject.BaseMethod); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                On_BaseMethod(UnderlyingObject.BaseMethod);
+                await On_BaseMethod(UnderlyingObject.BaseMethod);
         }
-        #endregion //public void BaseMethod() Method
+        #endregion //public async Task BaseMethod() Method
     }
 }

@@ -1,10 +1,11 @@
 ﻿//HintName: TestClassProxy{T}.g.cs
 using ProxySourceGenerator;
+using System.Threading.Tasks;
 namespace Test
 {
     partial interface ITestClass<T> where T: struct
     {
-        void Method<TMethod>()
+        Task Method<TMethod>()
     where TMethod : new();
     }
 
@@ -37,28 +38,28 @@ namespace Test
         {
             UnderlyingObject = underlyingObject;
         }
-        #region public void Method<TMethod>()
+        #region public async Task Method<TMethod>()
     where TMethod : new() Method
-        protected virtual void On_Method<TMethod>(Action baseMethod)
+        protected virtual System.Threading.Tasks.Task On_Method<TMethod>(Func<System.Threading.Tasks.Task> baseMethod)
             where TMethod : new()
         {
-            baseMethod();
+            return baseMethod();
         }
-        public void Method<TMethod>()
+        public async Task Method<TMethod>()
     where TMethod : new()
         {
-            if (InterceptMethod != null)
-                InterceptMethod(
+            if (InterceptAsyncMethod != null)
+                await InterceptAsyncMethod(
                     "Method<TMethod>", 
-                    p => {On_Method<TMethod>(UnderlyingObject.Method<TMethod>); return null;},
+                    async p => {await On_Method<TMethod>(UnderlyingObject.Method<TMethod>); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                On_Method<TMethod>(UnderlyingObject.Method<TMethod>);
+                await On_Method<TMethod>(UnderlyingObject.Method<TMethod>);
         }
-        #endregion //public void Method<TMethod>()
+        #endregion //public async Task Method<TMethod>()
     where TMethod : new() Method
     }
 }

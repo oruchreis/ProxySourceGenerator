@@ -1,11 +1,13 @@
-//HintName: TestClassProxy.g.cs
+﻿//HintName: TestClassProxy.g.cs
 using ProxySourceGenerator;
+using System.Threading.Tasks;
 namespace Test
 {
     partial interface ITestClass 
     {
         string AProperty { get; set; }
-        void Method();
+        Task Method();
+        int MethodReturnInt(string str);
     }
 
     internal static class TestClassProxyInitializer
@@ -17,7 +19,7 @@ namespace Test
         }
     }
     
-    [JsonSerializable][System.Runtime.Serialization.DataContract(Namespace = "asd")]
+    
     partial class TestClassProxy: ITestClass, IGeneratedProxy<ITestClass> 
     {
         /// <inheritdoc/>
@@ -37,7 +39,7 @@ namespace Test
         {
             UnderlyingObject = underlyingObject;
         }
-        #region [System.Runtime.Serialization.DataMember(Order = 0)] [JsonProperty] public string AProperty Property
+        #region public string AProperty Property
         protected virtual string On_AProperty_Getter(Func<string> getter)
         {
             return getter();
@@ -46,7 +48,7 @@ namespace Test
         {
             setter(value);
         }
-        [System.Runtime.Serialization.DataMember(Order = 0)] [JsonProperty] public string AProperty
+        public string AProperty
         {
             get 
             {
@@ -63,26 +65,46 @@ namespace Test
                     On_AProperty_Setter(v => UnderlyingObject.AProperty = v, value);
             }
         }
-        #endregion //[System.Runtime.Serialization.DataMember(Order = 0)] [JsonProperty] public string AProperty Property
-        #region public void Method() Method
-        protected virtual void On_Method(Action baseMethod)
+        #endregion //public string AProperty Property
+        #region public async Task Method() Method
+        protected virtual System.Threading.Tasks.Task On_Method(Func<System.Threading.Tasks.Task> baseMethod)
             
         {
-            baseMethod();
+            return baseMethod();
         }
-        public void Method()
+        public async Task Method()
         {
-            if (InterceptMethod != null)
-                InterceptMethod(
+            if (InterceptAsyncMethod != null)
+                await InterceptAsyncMethod(
                     "Method", 
-                    p => {On_Method(UnderlyingObject.Method); return null;},
+                    async p => {await On_Method(UnderlyingObject.Method); return null;},
                     new Dictionary<string, object> {
                         
                     }
                     );
             else
-                On_Method(UnderlyingObject.Method);
+                await On_Method(UnderlyingObject.Method);
         }
-        #endregion //public void Method() Method
+        #endregion //public async Task Method() Method
+        #region public int MethodReturnInt(string str) Method
+        protected virtual int On_MethodReturnInt(Func<string, int> baseMethod, string str)
+            
+        {
+            return baseMethod(str);
+        }
+        public int MethodReturnInt(string str)
+        {
+            if (InterceptMethod != null)
+                return (int)InterceptMethod(
+                    "MethodReturnInt", 
+                    p => On_MethodReturnInt(UnderlyingObject.MethodReturnInt, (string)p["str"]),
+                    new Dictionary<string, object> {
+                        ["str"] = str
+                    }
+                    );
+            else
+                return On_MethodReturnInt(UnderlyingObject.MethodReturnInt, str);
+        }
+        #endregion //public int MethodReturnInt(string str) Method
     }
 }

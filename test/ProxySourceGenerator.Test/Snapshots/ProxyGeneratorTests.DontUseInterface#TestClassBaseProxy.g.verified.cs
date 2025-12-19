@@ -1,5 +1,6 @@
 ﻿//HintName: TestClassBaseProxy.g.cs
 using ProxySourceGenerator;
+using System.Threading.Tasks;
 namespace Test
 {
     internal static class TestClassBaseProxyInitializer

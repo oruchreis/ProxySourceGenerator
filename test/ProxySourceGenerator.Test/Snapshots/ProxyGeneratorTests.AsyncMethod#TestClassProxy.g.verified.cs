@@ -1,4 +1,4 @@
-//HintName: TestClassProxy.g.cs
+﻿//HintName: TestClassProxy.g.cs
 using ProxySourceGenerator;
 using System.Threading.Tasks;
 namespace Test
