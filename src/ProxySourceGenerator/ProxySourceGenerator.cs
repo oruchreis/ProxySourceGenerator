@@ -149,9 +149,12 @@ public class ProxySourceGenerator : IIncrementalGenerator
                         {
                     """);
 
-                foreach (var member in RecursiveFindMembers(typeSymbol).Where(m => !m.IsStatic &&
-                    (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
-                    ((!useInterface && m.DeclaredAccessibility != Accessibility.Private) || (useInterface && m.DeclaredAccessibility == Accessibility.Public))))
+                foreach (var member in RecursiveFindMembers(typeSymbol)
+                    .Distinct(MemberSymbolComparer.Instance)
+                    .Where(m => !m.IsStatic &&
+                        (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
+                        ((!useInterface && m.DeclaredAccessibility != Accessibility.Private) || (useInterface && m.DeclaredAccessibility == Accessibility.Public)))
+                    )
                 {
                     var propertyDeclarationSyntax = member.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as PropertyDeclarationSyntax ??
                         (member is not IPropertySymbol propertySymbol ? null :
@@ -298,9 +301,11 @@ public class ProxySourceGenerator : IIncrementalGenerator
             }            
 
             distinctMembers = [];
-            foreach (var member in RecursiveFindMembers(typeSymbol).Where(m => !m.IsStatic && (useInterface || m.IsVirtual || m.IsAbstract) &&
-                (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
-                ((!useInterface && m.DeclaredAccessibility != Accessibility.Private) || (useInterface && m.DeclaredAccessibility == Accessibility.Public))))
+            foreach (var member in RecursiveFindMembers(typeSymbol)
+                .Distinct(MemberSymbolComparer.Instance)
+                .Where(m => !m.IsStatic && (useInterface || m.IsVirtual || m.IsAbstract) &&
+                    (m.Kind == SymbolKind.Property || m.Kind == SymbolKind.Method) &&
+                    ((!useInterface && m.DeclaredAccessibility != Accessibility.Private) || (useInterface && m.DeclaredAccessibility == Accessibility.Public))))
             {
                 var attributeListSyntaxFromSymbol = member.GetAttributes().Select(ad => SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[]{
                     SyntaxFactory.Attribute(SyntaxFactory.ParseName(ad.AttributeClass!.ToDisplayString()), SyntaxFactory.AttributeArgumentList(SyntaxFactory.SeparatedList(new[]
@@ -721,4 +726,90 @@ public class ProxySourceGenerator : IIncrementalGenerator
         }
     }
 
+}
+
+
+public sealed class MemberSymbolComparer : IEqualityComparer<ISymbol?>
+{
+    public static readonly MemberSymbolComparer Instance = new();
+
+    public bool Equals(ISymbol? x, ISymbol? y)
+    {
+        if (ReferenceEquals(x, y)) return true;
+        if (x is null || y is null) return false;
+
+        var tx = x.ContainingType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "";
+        var ty = y.ContainingType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "";
+        if (!string.Equals(tx, ty, StringComparison.Ordinal)) return false;
+
+        var nx = x.ContainingNamespace?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "";
+        var ny = y.ContainingNamespace?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "";
+        if (!string.Equals(nx, ny, StringComparison.Ordinal)) return false;
+
+        if (x.Name != y.Name || x.Kind != y.Kind) return false;
+
+        if (x is IMethodSymbol mx && y is IMethodSymbol my)
+        {
+            if (mx.Parameters.Length != my.Parameters.Length) return false;
+
+            for (int i = 0; i < mx.Parameters.Length; i++)
+            {
+                var px = mx.Parameters[i].Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                var py = my.Parameters[i].Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                if (!string.Equals(px, py, StringComparison.Ordinal))
+                    return false;
+            }
+
+            var rx = mx.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var ry = my.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (!string.Equals(rx, ry, StringComparison.Ordinal)) return false;
+        }
+
+        if (x is IPropertySymbol pxProp && y is IPropertySymbol pyProp)
+        {
+            var txProp = pxProp.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var tyProp = pyProp.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (!string.Equals(txProp, tyProp, StringComparison.Ordinal)) return false;
+        }
+
+        return true;
+    }
+
+    public int GetHashCode(ISymbol? obj)
+    {
+        if (obj is null) return 0;
+
+        unchecked
+        {
+            int hash = 17;
+
+            var t = obj.ContainingType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "";
+            hash = hash * 31 + t.GetHashCode();
+
+            var ns = obj.ContainingNamespace?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "";
+            hash = hash * 31 + ns.GetHashCode();
+
+            hash = hash * 31 + obj.Name.GetHashCode();
+            hash = hash * 31 + obj.Kind.GetHashCode();
+
+            if (obj is IMethodSymbol m)
+            {
+                var r = m.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                hash = hash * 31 + r.GetHashCode();
+
+                foreach (var p in m.Parameters)
+                {
+                    var pt = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    hash = hash * 31 + pt.GetHashCode();
+                }
+            }
+            else if (obj is IPropertySymbol p)
+            {
+                var tProp = p.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                hash = hash * 31 + tProp.GetHashCode();
+            }
+
+            return hash;
+        }
+    }
 }

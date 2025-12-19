@@ -47,47 +47,7 @@ public partial interface IModel
 
 
 
-
-[GenerateProxy(GenerateForDerived = true)]
-public abstract class ModuleBase : IModule
-{
-    protected ModuleBase(IModuleContext context)
-    {
-        Context = context;
-    }
-
-    public IModuleContext Context { get; }
-    public int Prop1 => GetProp1();
-
-    public string Prop2 => "";
-
-    protected virtual int GetProp1()
-    {
-        return 1;
-    }
-
-    public virtual Task MethodAsync()
-    {
-        return Task.CompletedTask;
-    }
-}
-
-public interface IModule
-{
-    int Prop1 { get; }
-
-    IModuleContext Context { get; }
-
-    string Prop2 { get; }
-
-    Task MethodAsync();
-}
-
-public interface IModuleContext
-{
-}
-
-public class Module1 : ModuleBase, IModule1
+public class Module1 : ModuleBase
 {
     public Module1(IModuleContext context) : base(context)
     {
